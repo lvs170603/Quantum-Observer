@@ -181,16 +181,13 @@ export default function Home() {
         
         <div className="hidden md:flex md:items-center md:justify-between">
            <FilterControls />
-           <Button variant="outline" onClick={onResetFilters}>
-            Reset Filters
-          </Button>
         </div>
 
-        <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
-          <div className="lg:col-span-1 xl:col-span-2">
+        <div className="grid gap-4 md:gap-8 lg:grid-cols-3">
+          <div className="lg:col-span-2">
             <JobsTable jobs={filteredJobs} onJobSelect={handleJobSelect} />
           </div>
-          <div className="lg:col-span-1 xl:col-span-1">
+          <div>
             <BackendsGrid backends={backends} />
           </div>
         </div>
