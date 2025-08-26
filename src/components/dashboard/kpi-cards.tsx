@@ -41,7 +41,7 @@ const kpiData = [
 
 export function KpiCards({ metrics }: KpiCardsProps) {
   return (
-    <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
       {kpiData.map((kpi) => {
         const Icon = kpi.icon;
         const value = metrics[kpi.key as keyof Metrics];
