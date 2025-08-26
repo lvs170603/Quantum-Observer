@@ -108,11 +108,11 @@ export default function Home() {
       />
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         {metrics && <KpiCards metrics={metrics} />}
-        <div className="grid gap-4 md:gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+        <div className="grid gap-4 md:gap-8 lg:grid-cols-5">
+          <div className="lg:col-span-3">
             <JobsTable jobs={jobs} onJobSelect={handleJobSelect} />
           </div>
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-2">
             <BackendsGrid backends={backends} />
           </div>
         </div>
