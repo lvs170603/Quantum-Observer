@@ -46,25 +46,25 @@ export function JobsTable({ jobs, onJobSelect }: JobsTableProps) {
               <TableRow>
                 <TableHead>Job ID</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Backend</TableHead>
-                <TableHead>Submitted</TableHead>
-                <TableHead>User</TableHead>
+                <TableHead className="hidden md:table-cell">Backend</TableHead>
+                <TableHead className="hidden sm:table-cell">Submitted</TableHead>
+                <TableHead className="hidden lg:table-cell">User</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {jobs.map((job) => (
                 <TableRow key={job.id} onClick={() => onJobSelect(job)} className="cursor-pointer">
-                  <TableCell className="font-mono text-xs">{job.id}</TableCell>
+                  <TableCell className="font-mono text-xs truncate max-w-[120px] sm:max-w-xs">{job.id}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className={statusStyles[job.status]}>
                       {job.status}
                     </Badge>
                   </TableCell>
-                  <TableCell>{job.backend}</TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">{job.backend}</TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     {formatDistanceToNow(new Date(job.submitted), { addSuffix: true })}
                   </TableCell>
-                  <TableCell>{job.user}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{job.user}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
