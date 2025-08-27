@@ -165,7 +165,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col">
+    <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <DashboardHeader
         isDemo={isDemo}
         onToggleDemo={handleToggleDemo}
@@ -176,18 +176,18 @@ export default function Home() {
         onOpenFilters={() => setIsFilterSheetOpen(true)}
         isFetching={isFetching}
       />
-      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 lg:p-8">
+      <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
         {metrics && <KpiCards metrics={metrics} />}
         
         <div className="hidden md:flex md:items-center md:justify-between">
            <FilterControls />
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8">
           <div className="lg:col-span-2">
             <JobsTable jobs={filteredJobs} onJobSelect={handleJobSelect} />
           </div>
-          <div>
+          <div className="lg:col-span-1">
             <BackendsGrid backends={backends} />
           </div>
         </div>

@@ -54,7 +54,7 @@ export function JobsTable({ jobs, onJobSelect }: JobsTableProps) {
             <TableBody>
               {jobs.map((job) => (
                 <TableRow key={job.id} onClick={() => onJobSelect(job)} className="cursor-pointer">
-                  <TableCell className="font-mono text-xs truncate max-w-[120px] sm:max-w-xs">{job.id}</TableCell>
+                  <TableCell className="font-mono text-xs truncate max-w-[100px] sm:max-w-xs">{job.id}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className={statusStyles[job.status]}>
                       {job.status}

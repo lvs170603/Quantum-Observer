@@ -30,7 +30,7 @@ export function DashboardHeader({
   isFetching
 }: DashboardHeaderProps) {
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:h-16 sm:px-6">
       <div className="flex items-center gap-2">
         <BrainCircuit className="h-6 w-6 text-primary" />
         <h1 className="text-lg font-semibold md:text-xl">Quantum Observer</h1>
