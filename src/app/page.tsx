@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
@@ -46,9 +47,38 @@ export default function Home() {
 
   const { toast } = useToast();
 
+  const fetchDemoData = async () => {
+    try {
+      const fallbackResponse = await fetch("/api/mock?demo=true");
+      if (!fallbackResponse.ok) {
+         throw new Error('Failed to fetch even the demo data.');
+      }
+      const fallbackData = await fallbackResponse.json();
+      setJobs(fallbackData.jobs);
+      setBackends(fallbackData.backends);
+      setMetrics(fallbackData.metrics);
+      setChartData(fallbackData.chartData);
+      setLastUpdated(new Date());
+    } catch (e) {
+      console.error("Fatal: Could not load any data.", e);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not load any data. Please check your connection or contact support.",
+      });
+    }
+  }
+
   const fetchData = useCallback(async () => {
     setIsFetching(true);
-    const url = isDemo ? "/api/mock?demo=true" : "/api/mock";
+    
+    if (isDemo) {
+      await fetchDemoData();
+      setIsFetching(false);
+      return;
+    }
+
+    const url = "/api/mock";
     console.log(`Fetching data from ${url}...`);
 
     try {
@@ -71,13 +101,8 @@ export default function Home() {
         title: "Error",
         description: "Failed to fetch dashboard data. Using local demo data as fallback.",
       });
-       // Fallback to demo data on error
-      const fallbackResponse = await fetch("/api/mock?demo=true");
-      const fallbackData = await fallbackResponse.json();
-      setJobs(fallbackData.jobs);
-      setBackends(fallbackData.backends);
-      setMetrics(fallbackData.metrics);
-      setChartData(fallbackData.chartData);
+      setIsDemo(true); // Fallback to demo mode
+      await fetchDemoData(); // Load demo data
     } finally {
       setIsFetching(false);
     }
@@ -186,7 +211,9 @@ export default function Home() {
         isFetching={isFetching}
       />
       <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
-        {metrics && <KpiCards metrics={metrics} onCardClick={handleKpiCardClick} activeView={chartView} />}
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+            {metrics && <KpiCards metrics={metrics} onCardClick={handleKpiCardClick} activeView={chartView} />}
+        </div>
         
         <div className="hidden md:flex md:items-center md:justify-between">
            <FilterControls />
