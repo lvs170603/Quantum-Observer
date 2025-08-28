@@ -50,16 +50,22 @@ npm install
 
 ### 3. Set Up Environment Variables
 
-For the AI features to work, you will need a Google AI API key.
+Create a copy of the `.env` file and name it `.env.local`:
+```bash
+cp .env .env.local
+```
 
-1.  Create a copy of the `.env` file and name it `.env.local`:
-    ```bash
-    cp .env .env.local
-    ```
-2.  Open the `.env.local` file and add your Gemini API key:
-    ```
-    GEMINI_API_KEY=your_api_key_here
-    ```
+Open the `.env.local` file and add your API keys.
+
+- **For AI features (Genkit):**
+  ```
+  GEMINI_API_KEY=your_gemini_api_key_here
+  ```
+- **For live Qiskit data (optional):**
+  From your [IBM Quantum Account](https://quantum.ibm.com/account), copy your API token and add it.
+  ```
+  QISKIT_API_KEY=your_qiskit_api_key_here
+  ```
 
 ### 4. Run the Development Server
 
@@ -69,7 +75,7 @@ Start the Next.js development server:
 npm run dev
 ```
 
-The application will be available at `http://localhost:9002`.
+The application will be available at `http://localhost:9002`. By default, it will use mock data. To connect to the live Qiskit API, turn off "Demo" mode in the UI.
 
 ### 5. Run the Genkit Inspector (Optional)
 
@@ -90,6 +96,7 @@ quantum-observer/
 ├── public/                     # Static assets (images, icons, etc.)
 ├── src/
 │   ├── app/                    # Next.js App Router (pages & layouts)
+│   │   └── api/                # API routes (mock data)
 │   ├── components/             # Reusable React components
 │   │   ├── dashboard/          # Dashboard-specific components
 │   │   ├── ui/                 # ShadCN UI components
@@ -97,7 +104,6 @@ quantum-observer/
 │   ├── ai/                     # Genkit AI logic
 │   │   ├── flows/              # AI pipelines (anomaly detection, etc.)
 │   │   └── genkit.ts           # Genkit initialization
-│   ├── data/                   # Mock/demo data
 │   ├── hooks/                  # Custom React hooks
 │   └── lib/                    # Utility functions & types
 ├── .env                        # Environment variable template

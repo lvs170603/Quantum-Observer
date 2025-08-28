@@ -114,13 +114,38 @@ function generateMockData() {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const isDemo = searchParams.get('demo') === 'true'
+  const apiKey = process.env.QISKIT_API_KEY;
 
-  // In a real app, you would add your Qiskit API fetching logic here.
-  // For now, we'll use the dynamic mock data generation.
-  // If it's a 'live' call (isDemo is false), you could introduce
-  // slight random delays or variations to simulate network latency.
-  if (!isDemo) {
-    await new Promise(res => setTimeout(res, Math.random() * 500 + 100));
+
+  // If not in demo mode and an API key is present, fetch from Qiskit.
+  // Otherwise, fall back to mock data.
+  if (!isDemo && apiKey) {
+    try {
+      // =================================================================
+      // TODO: IMPLEMENT QISKIT API FETCHING LOGIC HERE
+      // =================================================================
+      // 1. Use the `apiKey` to authenticate with the IBM Quantum API.
+      //    The base URL is likely: https://api.quantum-computing.ibm.com/
+      //
+      // 2. Fetch the list of jobs and backends from the relevant endpoints.
+      //    You will need to set the `Authorization` header with your token.
+      //    Example: `Authorization: 'Bearer ' + apiKey`
+      //
+      // 3. Transform the data from the API response to match the `Job`, 
+      //    `Backend`, `Metrics`, and `ChartData` types defined in `src/lib/types.ts`.
+      //
+      // 4. Return the transformed data as JSON.
+      //
+      // For now, we will return an error message and then fall back to mock data.
+      // =================================================================
+
+      // Replace this with your actual API call.
+      console.warn("Qiskit API not implemented. Falling back to mock data.");
+
+    } catch (error) {
+       console.error("Error fetching from Qiskit API:", error);
+       // If the API call fails, we can still fall back to mock data.
+    }
   }
   
   const data = generateMockData();
