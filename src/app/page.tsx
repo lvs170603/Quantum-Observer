@@ -47,7 +47,7 @@ export default function Home() {
 
   const { toast } = useToast();
 
-  const fetchDemoData = async () => {
+  const fetchDemoData = useCallback(async () => {
     try {
       const fallbackResponse = await fetch("/api/mock?demo=true");
       if (!fallbackResponse.ok) {
@@ -67,7 +67,7 @@ export default function Home() {
         description: "Could not load any data. Please check your connection or contact support.",
       });
     }
-  }
+  }, [toast]);
 
   const fetchData = useCallback(async () => {
     setIsFetching(true);
@@ -106,7 +106,7 @@ export default function Home() {
     } finally {
       setIsFetching(false);
     }
-  }, [isDemo, toast]);
+  }, [isDemo, toast, fetchDemoData]);
 
   useEffect(() => {
     fetchData();
@@ -125,10 +125,18 @@ export default function Home() {
 
   useEffect(() => {
     if (autoRefresh) {
-      const intervalId = setInterval(fetchData, REFRESH_INTERVAL);
+      const intervalId = setInterval(() => {
+        setIsFetching(true);
+        if (isDemo) {
+          fetchDemoData();
+        } else {
+          fetchData();
+        }
+        setIsFetching(false);
+      }, REFRESH_INTERVAL);
       return () => clearInterval(intervalId);
     }
-  }, [autoRefresh, fetchData]);
+  }, [autoRefresh, isDemo, fetchData, fetchDemoData]);
 
   const handleJobSelect = (job: Job) => {
     setSelectedJob(job);
