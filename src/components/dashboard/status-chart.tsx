@@ -1,8 +1,8 @@
 "use client"
 
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { ChartTooltipContent, ChartContainer } from "@/components/ui/chart"
+import { ChartTooltipContent, ChartContainer, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
 import type { ChartData } from "@/lib/types"
 
 interface StatusChartProps {
@@ -21,7 +21,9 @@ export function StatusChart({ data }: StatusChartProps) {
     <Card>
       <CardHeader>
         <CardTitle>Job Status Over Time</CardTitle>
-        <CardDescription>A summary of job statuses over the last 12 hours.</CardDescription>
+        <CardDescription>
+          This stacked area chart shows the distribution of job statuses (Completed, Running, Queued, Error) over the last 12 hours. Each colored area represents the volume of jobs in that particular state at a given time, allowing for quick identification of trends and potential bottlenecks.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -31,6 +33,7 @@ export function StatusChart({ data }: StatusChartProps) {
               <XAxis dataKey="time" tickLine={false} axisLine={false} tickMargin={8} />
               <YAxis />
               <Tooltip content={<ChartTooltipContent indicator="dot" />} />
+              <ChartLegend content={<ChartLegendContent />} />
               <defs>
                 <linearGradient id="colorCOMPLETED" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="var(--color-COMPLETED)" stopOpacity={0.8} />
