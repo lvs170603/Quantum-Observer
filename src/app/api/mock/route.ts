@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { Job, Backend, Metrics, ChartData, JobStatus } from "@/lib/types";
 import { subMinutes, subHours, formatISO } from "date-fns";
+import { generateCircuitDiagram } from '@/ai/flows/generate-circuit-diagram';
 
 // This function generates dynamic mock data, simulating a real API response.
-function generateMockData() {
+async function generateMockData() {
   const now = new Date();
 
   const mockBackends: Backend[] = [
@@ -17,6 +18,14 @@ function generateMockData() {
 
   const jobStatuses: JobStatus[] = ["COMPLETED", "RUNNING", "QUEUED", "ERROR", "CANCELLED"];
   const users = ["Alice", "Bob", "Charlie", "David", "Eve"];
+
+  const circuitImagePromises = Array.from({ length: 51 }, (_, i) => {
+    const qubitCount = Math.floor(Math.random() * 5) + 2; // 2 to 6 qubits
+    const gateCount = Math.floor(Math.random() * 8) + 3; // 3 to 10 gates
+    return generateCircuitDiagram({ prompt: `A ${qubitCount}-qubit quantum circuit diagram with ${gateCount} gates, clean and simple.` });
+  });
+
+  const circuitImages = await Promise.all(circuitImagePromises);
 
   const mockJobs: Job[] = Array.from({ length: 50 }, (_, i) => {
     const status = jobStatuses[Math.floor(Math.random() * jobStatuses.length)];
@@ -52,7 +61,7 @@ function generateMockData() {
       logs: status === 'ERROR' ? `Error: Qubit calibration failed. Details: ...\n[some other log line]` : `Job execution successful.\nFinal measurement data collected.`,
       results: status === 'COMPLETED' ? { "001": 102, "110": 34, "101": 410 } : {},
       status_history,
-      circuit_image_url: "https://picsum.photos/800/200",
+      circuit_image_url: circuitImages[i],
     };
   });
 
@@ -72,7 +81,7 @@ function generateMockData() {
       { status: 'RUNNING', timestamp: formatISO(subMinutes(now, 5)) }, // 115 minute queue time
       { status: 'COMPLETED', timestamp: formatISO(subMinutes(now, 3)) },
     ],
-    circuit_image_url: "https://picsum.photos/800/200",
+    circuit_image_url: circuitImages[50],
   });
 
   const liveJobs = mockJobs.filter(j => j.status === 'RUNNING' || j.status === 'QUEUED').length;
@@ -150,7 +159,7 @@ export async function GET(request: Request) {
     }
   }
   
-  const data = generateMockData();
+  const data = await generateMockData();
   
   return NextResponse.json(data);
 }

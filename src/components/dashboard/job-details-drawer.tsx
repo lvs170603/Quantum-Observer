@@ -15,6 +15,7 @@ import type { Job, JobStatus } from "@/lib/types"
 import { formatDistanceToNow, format } from "date-fns"
 import Image from "next/image"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface JobDetailsDrawerProps {
   job: Job | null;
@@ -35,15 +36,15 @@ export function JobDetailsDrawer({ job, isOpen, onOpenChange }: JobDetailsDrawer
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-xl w-full">
+      <SheetContent className="w-full sm:max-w-xl">
         <SheetHeader>
-          <SheetTitle className="font-mono text-base break-all">{job.id}</SheetTitle>
+          <SheetTitle className="font-mono break-all text-base">{job.id}</SheetTitle>
           <SheetDescription>
             Detailed information for job submitted by {job.user}.
           </SheetDescription>
         </SheetHeader>
         <ScrollArea className="h-[calc(100vh-8rem)] pr-6">
-          <div className="py-4 space-y-4">
+          <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div className="font-medium text-muted-foreground">Status</div>
               <div><Badge variant="outline" className={statusStyles[job.status]}>{job.status}</Badge></div>
@@ -64,7 +65,7 @@ export function JobDetailsDrawer({ job, isOpen, onOpenChange }: JobDetailsDrawer
             <Separator />
             
             <div>
-              <h4 className="font-semibold text-sm mb-2">Status History</h4>
+              <h4 className="mb-2 text-sm font-semibold">Status History</h4>
               <ul className="space-y-2 text-xs">
                 {job.status_history.map(s => (
                   <li key={`${s.status}-${s.timestamp}`} className="flex items-center gap-2">
@@ -79,16 +80,28 @@ export function JobDetailsDrawer({ job, isOpen, onOpenChange }: JobDetailsDrawer
               <>
                 <Separator />
                 <div>
-                  <h4 className="font-semibold text-sm mb-2">Quantum Circuit</h4>
-                  <div className="p-2 bg-muted rounded-md">
+                  <h4 className="mb-2 text-sm font-semibold">Quantum Circuit</h4>
+                  <div className="rounded-md bg-muted p-2">
                     <Image
                       src={job.circuit_image_url}
                       alt="Quantum Circuit Diagram"
                       width={800}
                       height={200}
-                      className="object-contain rounded-md w-full h-auto"
+                      className="h-auto w-full rounded-md object-contain"
                       data-ai-hint="quantum circuit"
                     />
+                  </div>
+                </div>
+              </>
+            )}
+
+             {!job.circuit_image_url && (
+                <>
+                <Separator />
+                <div>
+                  <h4 className="mb-2 text-sm font-semibold">Quantum Circuit</h4>
+                  <div className="rounded-md bg-muted p-2">
+                     <Skeleton className="h-[100px] w-full" />
                   </div>
                 </div>
               </>
@@ -97,8 +110,8 @@ export function JobDetailsDrawer({ job, isOpen, onOpenChange }: JobDetailsDrawer
             <Separator />
 
             <div>
-              <h4 className="font-semibold text-sm mb-2">Logs</h4>
-              <pre className="p-2 bg-muted rounded-md text-xs font-code overflow-x-auto">
+              <h4 className="mb-2 text-sm font-semibold">Logs</h4>
+              <pre className="font-code overflow-x-auto rounded-md bg-muted p-2 text-xs">
                 <code>{job.logs}</code>
               </pre>
             </div>
@@ -106,8 +119,8 @@ export function JobDetailsDrawer({ job, isOpen, onOpenChange }: JobDetailsDrawer
             <Separator />
 
             <div>
-              <h4 className="font-semibold text-sm mb-2">Results</h4>
-              <pre className="p-2 bg-muted rounded-md text-xs font-code overflow-x-auto">
+              <h4 className="mb-2 text-sm font-semibold">Results</h4>
+              <pre className="font-code overflow-x-auto rounded-md bg-muted p-2 text-xs">
                 <code>{Object.keys(job.results).length > 0 ? JSON.stringify(job.results, null, 2) : "No results available."}</code>
               </pre>
             </div>
