@@ -28,7 +28,7 @@ export function StatusChart({ data }: StatusChartProps) {
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
           <ResponsiveContainer>
-            <AreaChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 20 }}>
+            <AreaChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 40 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis 
                 dataKey="time" 
