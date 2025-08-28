@@ -1,3 +1,4 @@
+
 "use client"
 
 import {
@@ -66,7 +67,7 @@ export function JobDetailsDrawer({ job, isOpen, onOpenChange }: JobDetailsDrawer
               <h4 className="font-semibold text-sm mb-2">Status History</h4>
               <ul className="space-y-2 text-xs">
                 {job.status_history.map(s => (
-                  <li key={s.timestamp} className="flex items-center gap-2">
+                  <li key={`${s.status}-${s.timestamp}`} className="flex items-center gap-2">
                     <Badge variant="secondary" className="w-24 justify-center">{s.status}</Badge>
                     <span>{format(new Date(s.timestamp), "p")} ({formatDistanceToNow(new Date(s.timestamp), { addSuffix: true })})</span>
                   </li>
