@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import type { Job, Backend, Metrics, ChartData, JobStatus } from "@/lib/types";
-import { mockJobs, mockBackends, mockMetrics, mockChartData } from "@/data/mock-data";
 import { KpiCards } from "@/components/dashboard/kpi-cards";
 import { BackendsGrid } from "@/components/dashboard/backends-grid";
 import { JobsTable } from "@/components/dashboard/jobs-table";
@@ -47,34 +46,36 @@ export default function Home() {
 
   const fetchData = useCallback(async () => {
     setIsFetching(true);
-    console.log(isDemo ? "Fetching demo data..." : "Fetching live data...");
-    
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const url = isDemo ? "/api/mock?demo=true" : "/api/mock";
+    console.log(`Fetching data from ${url}...`);
 
     try {
-      if (isDemo) {
-        setJobs(mockJobs);
-        setBackends(mockBackends);
-        setMetrics(mockMetrics);
-        setChartData(mockChartData);
-      } else {
-        toast({
-          title: "Live Mode",
-          description: "Live data fetching is not implemented. Using demo data.",
-        });
-        setJobs(mockJobs);
-        setBackends(mockBackends);
-        setMetrics(mockMetrics);
-        setChartData(mockChartData);
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      const data = await response.json();
+      
+      setJobs(data.jobs);
+      setBackends(data.backends);
+      setMetrics(data.metrics);
+      setChartData(data.chartData);
       setLastUpdated(new Date());
+
     } catch (error) {
       console.error("Failed to fetch data:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to fetch dashboard data.",
+        description: "Failed to fetch dashboard data. Using local demo data as fallback.",
       });
+       // Fallback to demo data on error
+      const fallbackResponse = await fetch("/api/mock?demo=true");
+      const fallbackData = await fallbackResponse.json();
+      setJobs(fallbackData.jobs);
+      setBackends(fallbackData.backends);
+      setMetrics(fallbackData.metrics);
+      setChartData(fallbackData.chartData);
     } finally {
       setIsFetching(false);
     }
@@ -115,7 +116,7 @@ export default function Home() {
     setAutoRefresh(checked);
   }
 
-  const backendNames = useMemo(() => mockBackends.map(b => b.name), []);
+  const backendNames = useMemo(() => backends.map(b => b.name), [backends]);
   
   const FilterControls = () => (
     <div className="flex flex-col gap-4 md:flex-row md:items-center">
@@ -183,11 +184,11 @@ export default function Home() {
            <FilterControls />
         </div>
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-5 lg:gap-8">
+          <div className="lg:col-span-3">
             <JobsTable jobs={filteredJobs} onJobSelect={handleJobSelect} />
           </div>
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-2">
             <BackendsGrid backends={backends} />
           </div>
         </div>
