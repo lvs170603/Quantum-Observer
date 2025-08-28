@@ -11,6 +11,7 @@ export interface Job {
   logs: string;
   results: Record<string, any>;
   status_history: { status: JobStatus; timestamp: string }[];
+  circuit_image_url?: string;
 }
 
 export interface Backend {

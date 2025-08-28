@@ -52,6 +52,7 @@ function generateMockData() {
       logs: status === 'ERROR' ? `Error: Qubit calibration failed. Details: ...\n[some other log line]` : `Job execution successful.\nFinal measurement data collected.`,
       results: status === 'COMPLETED' ? { "001": 102, "110": 34, "101": 410 } : {},
       status_history,
+      circuit_image_url: "https://picsum.photos/800/200",
     };
   });
 
@@ -71,6 +72,7 @@ function generateMockData() {
       { status: 'RUNNING', timestamp: formatISO(subMinutes(now, 5)) }, // 115 minute queue time
       { status: 'COMPLETED', timestamp: formatISO(subMinutes(now, 3)) },
     ],
+    circuit_image_url: "https://picsum.photos/800/200",
   });
 
   const liveJobs = mockJobs.filter(j => j.status === 'RUNNING' || j.status === 'QUEUED').length;

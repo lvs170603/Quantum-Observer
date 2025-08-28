@@ -12,6 +12,8 @@ import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import type { Job, JobStatus } from "@/lib/types"
 import { formatDistanceToNow, format } from "date-fns"
+import Image from "next/image"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface JobDetailsDrawerProps {
   job: Job | null;
@@ -39,56 +41,77 @@ export function JobDetailsDrawer({ job, isOpen, onOpenChange }: JobDetailsDrawer
             Detailed information for job submitted by {job.user}.
           </SheetDescription>
         </SheetHeader>
-        <div className="py-4 space-y-4">
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="font-medium text-muted-foreground">Status</div>
-            <div><Badge variant="outline" className={statusStyles[job.status]}>{job.status}</Badge></div>
+        <ScrollArea className="h-[calc(100vh-8rem)] pr-6">
+          <div className="py-4 space-y-4">
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="font-medium text-muted-foreground">Status</div>
+              <div><Badge variant="outline" className={statusStyles[job.status]}>{job.status}</Badge></div>
+              
+              <div className="font-medium text-muted-foreground">Backend</div>
+              <div>{job.backend}</div>
+              
+              <div className="font-medium text-muted-foreground">Submitted</div>
+              <div>{format(new Date(job.submitted), "PPP p")}</div>
+
+              <div className="font-medium text-muted-foreground">Elapsed Time</div>
+              <div>{job.elapsed_time.toFixed(2)} seconds</div>
+              
+              <div className="font-medium text-muted-foreground">QPU Time</div>
+              <div>{job.qpu_seconds.toFixed(2)} seconds</div>
+            </div>
             
-            <div className="font-medium text-muted-foreground">Backend</div>
-            <div>{job.backend}</div>
+            <Separator />
             
-            <div className="font-medium text-muted-foreground">Submitted</div>
-            <div>{format(new Date(job.submitted), "PPP p")}</div>
+            <div>
+              <h4 className="font-semibold text-sm mb-2">Status History</h4>
+              <ul className="space-y-2 text-xs">
+                {job.status_history.map(s => (
+                  <li key={s.timestamp} className="flex items-center gap-2">
+                    <Badge variant="secondary" className="w-24 justify-center">{s.status}</Badge>
+                    <span>{format(new Date(s.timestamp), "p")} ({formatDistanceToNow(new Date(s.timestamp), { addSuffix: true })})</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-            <div className="font-medium text-muted-foreground">Elapsed Time</div>
-            <div>{job.elapsed_time.toFixed(2)} seconds</div>
+            {job.circuit_image_url && (
+              <>
+                <Separator />
+                <div>
+                  <h4 className="font-semibold text-sm mb-2">Quantum Circuit</h4>
+                  <div className="p-2 bg-muted rounded-md overflow-hidden flex justify-center items-center">
+                    <Image
+                      src={job.circuit_image_url}
+                      alt="Quantum Circuit Diagram"
+                      width={800}
+                      height={200}
+                      className="object-contain rounded-md"
+                      data-ai-hint="quantum circuit"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
             
-            <div className="font-medium text-muted-foreground">QPU Time</div>
-            <div>{job.qpu_seconds.toFixed(2)} seconds</div>
-          </div>
-          
-          <Separator />
-          
-          <div>
-            <h4 className="font-semibold text-sm mb-2">Status History</h4>
-            <ul className="space-y-2 text-xs">
-              {job.status_history.map(s => (
-                <li key={s.timestamp} className="flex items-center gap-2">
-                  <Badge variant="secondary" className="w-24 justify-center">{s.status}</Badge>
-                  <span>{format(new Date(s.timestamp), "p")} ({formatDistanceToNow(new Date(s.timestamp), { addSuffix: true })})</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          
-          <Separator />
+            <Separator />
 
-          <div>
-            <h4 className="font-semibold text-sm mb-2">Logs</h4>
-            <pre className="p-2 bg-muted rounded-md text-xs font-code overflow-x-auto">
-              <code>{job.logs}</code>
-            </pre>
-          </div>
+            <div>
+              <h4 className="font-semibold text-sm mb-2">Logs</h4>
+              <pre className="p-2 bg-muted rounded-md text-xs font-code overflow-x-auto">
+                <code>{job.logs}</code>
+              </pre>
+            </div>
 
-          <Separator />
+            <Separator />
 
-          <div>
-            <h4 className="font-semibold text-sm mb-2">Results</h4>
-            <pre className="p-2 bg-muted rounded-md text-xs font-code overflow-x-auto">
-              <code>{Object.keys(job.results).length > 0 ? JSON.stringify(job.results, null, 2) : "No results available."}</code>
-            </pre>
+            <div>
+              <h4 className="font-semibold text-sm mb-2">Results</h4>
+              <pre className="p-2 bg-muted rounded-md text-xs font-code overflow-x-auto">
+                <code>{Object.keys(job.results).length > 0 ? JSON.stringify(job.results, null, 2) : "No results available."}</code>
+              </pre>
+            </div>
           </div>
-        </div>
+        </ScrollArea>
         <SheetFooter>
           {/* Action buttons like "Cancel Job" could go here */}
         </SheetFooter>
