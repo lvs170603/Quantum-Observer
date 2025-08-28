@@ -21,9 +21,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 
 const REFRESH_INTERVAL = 15000; // 15 seconds
+type ChartView = "all" | "live_jobs" | "success_rate";
 
 export default function Home() {
   const [isDemo, setIsDemo] = useState(true);
@@ -41,6 +41,8 @@ export default function Home() {
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [backendFilter, setBackendFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<JobStatus | "all">("all");
+  const [chartView, setChartView] = useState<ChartView>("all");
+
 
   const { toast } = useToast();
 
@@ -115,6 +117,12 @@ export default function Home() {
   const handleToggleRefresh = (checked: boolean) => {
     setAutoRefresh(checked);
   }
+  
+  const handleKpiCardClick = (kpiKey: string) => {
+    if (kpiKey === 'live_jobs' || kpiKey === 'success_rate') {
+      setChartView(prev => (prev === kpiKey ? 'all' : kpiKey as ChartView));
+    }
+  };
 
   const backendNames = useMemo(() => backends.map(b => b.name), [backends]);
   
@@ -178,7 +186,7 @@ export default function Home() {
         isFetching={isFetching}
       />
       <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
-        {metrics && <KpiCards metrics={metrics} />}
+        {metrics && <KpiCards metrics={metrics} onCardClick={handleKpiCardClick} activeView={chartView} />}
         
         <div className="hidden md:flex md:items-center md:justify-between">
            <FilterControls />
@@ -192,7 +200,7 @@ export default function Home() {
             <BackendsGrid backends={backends} />
           </div>
         </div>
-        <StatusChart data={chartData} />
+        <StatusChart data={chartData} view={chartView} />
       </main>
 
       <JobDetailsDrawer
