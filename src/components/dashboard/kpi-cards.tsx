@@ -49,7 +49,7 @@ const kpiConfig = [
 
 export function KpiCards({ onCardClick, activeView, ...metrics }: KpiCardsProps) {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {kpiConfig.map((kpi) => {
         const Icon = kpi.icon;
         const value = metrics[kpi.key];
@@ -86,7 +86,7 @@ export function KpiCards({ onCardClick, activeView, ...metrics }: KpiCardsProps)
                 {cardInnerContent}
               </button>
             ) : (
-              cardInnerContent
+              <div className="p-0">{cardInnerContent}</div>
             )}
           </Card>
         );

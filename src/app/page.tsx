@@ -72,12 +72,6 @@ export default function Home() {
   const fetchData = useCallback(async () => {
     setIsFetching(true);
     
-    if (isDemo) {
-      await fetchDemoData();
-      setIsFetching(false);
-      return;
-    }
-
     const url = `/api/mock?demo=${isDemo}`;
     console.log(`Fetching data from ${url}...`);
 
@@ -101,7 +95,7 @@ export default function Home() {
         title: "Error",
         description: "Failed to fetch dashboard data. Using local demo data as fallback.",
       });
-      // Fallback to demo mode if the API fails
+      // Fallback to demo data if the API fails
       if (!isDemo) setIsDemo(true); 
       await fetchDemoData();
     } finally {
@@ -111,14 +105,14 @@ export default function Home() {
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, [isDemo]);
   
   useEffect(() => {
     if (autoRefresh) {
-      const intervalId = setInterval(fetchData, REFRESH_INTERVAL);
+      const intervalId = setInterval(() => fetchData(), REFRESH_INTERVAL);
       return () => clearInterval(intervalId);
     }
-  }, [autoRefresh, fetchData]);
+  }, [autoRefresh, isDemo, fetchData]);
 
   useEffect(() => {
     let newFilteredJobs = jobs;
@@ -212,9 +206,7 @@ export default function Home() {
         isFetching={isFetching}
       />
       <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-            {metrics && <KpiCards {...metrics} onCardClick={handleKpiCardClick} activeView={chartView} />}
-        </div>
+        {metrics && <KpiCards {...metrics} onCardClick={handleKpiCardClick} activeView={chartView} />}
         
         <div className="hidden md:flex md:items-center md:justify-between">
            <FilterControls />
