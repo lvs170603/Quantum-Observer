@@ -19,7 +19,8 @@ async function generateMockData() {
   const jobStatuses: JobStatus[] = ["COMPLETED", "RUNNING", "QUEUED", "ERROR", "CANCELLED"];
   const users = ["Alice", "Bob", "Charlie", "David", "Eve"];
 
-  const circuitImagePromises = Array.from({ length: 51 }, (_, i) => {
+  // Optimization: Generate a smaller number of circuit images and reuse them to prevent timeouts.
+  const circuitImagePromises = Array.from({ length: 10 }, (_, i) => {
     const qubitCount = Math.floor(Math.random() * 5) + 2; // 2 to 6 qubits
     const gateCount = Math.floor(Math.random() * 8) + 3; // 3 to 10 gates
     return generateCircuitDiagram({ prompt: `A ${qubitCount}-qubit quantum circuit diagram with ${gateCount} gates, clean and simple.` });
@@ -61,7 +62,7 @@ async function generateMockData() {
       logs: status === 'ERROR' ? `Error: Qubit calibration failed. Details: ...\n[some other log line]` : `Job execution successful.\nFinal measurement data collected.`,
       results: status === 'COMPLETED' ? { "001": 102, "110": 34, "101": 410 } : {},
       status_history,
-      circuit_image_url: circuitImages[i],
+      circuit_image_url: circuitImages[i % circuitImages.length], // Reuse generated images
     };
   });
 
@@ -81,7 +82,7 @@ async function generateMockData() {
       { status: 'RUNNING', timestamp: formatISO(subMinutes(now, 5)) }, // 115 minute queue time
       { status: 'COMPLETED', timestamp: formatISO(subMinutes(now, 3)) },
     ],
-    circuit_image_url: circuitImages[50],
+    circuit_image_url: circuitImages[0], // Reuse one of the generated images
   });
 
   const liveJobs = mockJobs.filter(j => j.status === 'RUNNING' || j.status === 'QUEUED').length;
