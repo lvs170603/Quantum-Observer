@@ -80,13 +80,13 @@ export function JobDetailsDrawer({ job, isOpen, onOpenChange }: JobDetailsDrawer
                 <Separator />
                 <div>
                   <h4 className="font-semibold text-sm mb-2">Quantum Circuit</h4>
-                  <div className="p-2 bg-muted rounded-md overflow-hidden flex justify-center items-center">
+                  <div className="p-2 bg-muted rounded-md">
                     <Image
                       src={job.circuit_image_url}
                       alt="Quantum Circuit Diagram"
                       width={800}
                       height={200}
-                      className="object-contain rounded-md"
+                      className="object-contain rounded-md w-full h-auto"
                       data-ai-hint="quantum circuit"
                     />
                   </div>
