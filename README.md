@@ -14,14 +14,30 @@ This is a Next.js application that provides a real-time dashboard for monitoring
 
 This project is built with a modern, component-based architecture using the following technologies:
 
-*   **[Next.js](https://nextjs.org/)**: A React framework for building full-stack web applications. We use the App Router for server-centric routing and performance.
-*   **[React](https://react.dev/)**: A JavaScript library for building user interfaces.
-*   **[TypeScript](https://www.typescriptlang.org/)**: A typed superset of JavaScript that enhances code quality and maintainability.
-*   **[Tailwind CSS](https://tailwindcss.com/)**: A utility-first CSS framework for rapid UI development.
-*   **[ShadCN UI](https://ui.shadcn.com/)**: A collection of beautifully designed, reusable components built on top of Radix UI and Tailwind CSS.
-*   **[Genkit](https://firebase.google.com/docs/genkit)**: A toolkit for building production-ready AI-powered features. It is used here for the anomaly detection feature.
-*   **[Recharts](https://recharts.org/)**: A composable charting library built on React components, used for the status history graph.
-*   **[Lucide React](https://lucide.dev/)**: A simply beautiful and consistent icon toolkit.
+*   [Next.js](https://nextjs.org/): A React framework for building full-stack web applications. We use the App Router for server-centric routing and performance.
+*   [React](https://react.dev/): A JavaScript library for building user interfaces.
+*   [TypeScript](https://www.typescriptlang.org/): A typed superset of JavaScript that enhances code quality and maintainability.
+*   [Tailwind CSS](https://tailwindcss.com/): A utility-first CSS framework for rapid UI development.
+*   [ShadCN UI](https://ui.shadcn.com/): A collection of beautifully designed, reusable components built on top of Radix UI and Tailwind CSS.
+*   [Genkit](https://firebase.google.com/docs/genkit): A toolkit for building production-ready AI-powered features. It is used here for the anomaly detection feature.
+*   [Recharts](https://recharts.org/): A composable charting library built on React components, used for the status history graph.
+*   [Lucide React](https://lucide.dev/): A simply beautiful and consistent icon toolkit.
+
+## Project Structure
+
+The project is organized into the following directories:
+
+*   `src/app/`: Contains the main application pages and layouts, following the Next.js App Router structure.
+*   `src/components/`: Home to all the reusable React components, subdivided into:
+    *   `dashboard/`: Components specifically built for the dashboard interface.
+    *   `providers/`: React context providers, such as the theme provider.
+    *   `ui/`: Core UI components from ShadCN.
+*   `src/ai/`: Holds all the Genkit-related code for AI functionality.
+    *   `flows/`: Genkit flows that orchestrate calls to AI models.
+*   `src/lib/`: Includes utility functions (`utils.ts`) and TypeScript type definitions (`types.ts`).
+*   `src/data/`: Contains mock data used for development and demonstration.
+*   `src/hooks/`: Stores custom React hooks, like `useToast`.
+*   `public/`: For static assets that are served directly.
 
 ## Getting Started
 
