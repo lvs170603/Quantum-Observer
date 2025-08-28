@@ -78,7 +78,7 @@ export default function Home() {
       return;
     }
 
-    const url = "/api/mock";
+    const url = `/api/mock?demo=${isDemo}`;
     console.log(`Fetching data from ${url}...`);
 
     try {
@@ -101,8 +101,9 @@ export default function Home() {
         title: "Error",
         description: "Failed to fetch dashboard data. Using local demo data as fallback.",
       });
-      setIsDemo(true); // Fallback to demo mode
-      await fetchDemoData(); // Load demo data
+      // Fallback to demo mode if the API fails
+      if (!isDemo) setIsDemo(true); 
+      await fetchDemoData();
     } finally {
       setIsFetching(false);
     }
@@ -111,6 +112,13 @@ export default function Home() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+  
+  useEffect(() => {
+    if (autoRefresh) {
+      const intervalId = setInterval(fetchData, REFRESH_INTERVAL);
+      return () => clearInterval(intervalId);
+    }
+  }, [autoRefresh, fetchData]);
 
   useEffect(() => {
     let newFilteredJobs = jobs;
@@ -122,21 +130,6 @@ export default function Home() {
     }
     setFilteredJobs(newFilteredJobs);
   }, [jobs, backendFilter, statusFilter]);
-
-  useEffect(() => {
-    if (autoRefresh) {
-      const intervalId = setInterval(() => {
-        setIsFetching(true);
-        if (isDemo) {
-          fetchDemoData();
-        } else {
-          fetchData();
-        }
-        setIsFetching(false);
-      }, REFRESH_INTERVAL);
-      return () => clearInterval(intervalId);
-    }
-  }, [autoRefresh, isDemo, fetchData, fetchDemoData]);
 
   const handleJobSelect = (job: Job) => {
     setSelectedJob(job);
@@ -220,7 +213,7 @@ export default function Home() {
       />
       <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-            {metrics && <KpiCards metrics={metrics} onCardClick={handleKpiCardClick} activeView={chartView} />}
+            {metrics && <KpiCards {...metrics} onCardClick={handleKpiCardClick} activeView={chartView} />}
         </div>
         
         <div className="hidden md:flex md:items-center md:justify-between">

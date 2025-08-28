@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -6,16 +7,15 @@ import type { Metrics } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 
-interface KpiCardsProps {
-  metrics: Metrics;
+interface KpiCardsProps extends Metrics {
   onCardClick: (kpiKey: string) => void;
   activeView: string;
 }
 
-const kpiData = [
+const kpiConfig = [
   {
     title: "Live Jobs",
-    key: "live_jobs",
+    key: "live_jobs" as const,
     icon: Activity,
     description: "Jobs currently running or queued",
     format: (value: number) => value.toString(),
@@ -23,7 +23,7 @@ const kpiData = [
   },
   {
     title: "Avg Wait Time",
-    key: "avg_wait_time",
+    key: "avg_wait_time" as const,
     icon: Clock,
     description: "Average time jobs spend in queue",
     format: (value: number) => `${Math.round(value / 60)}m ${Math.round(value % 60)}s`,
@@ -31,7 +31,7 @@ const kpiData = [
   },
   {
     title: "Success Rate",
-    key: "success_rate",
+    key: "success_rate" as const,
     icon: CheckCircle,
     description: "Percentage of jobs completed successfully",
     format: (value: number) => `${value.toFixed(1)}%`,
@@ -39,7 +39,7 @@ const kpiData = [
   },
   {
     title: "Open Sessions",
-    key: "open_sessions",
+    key: "open_sessions" as const,
     icon: Users,
     description: "Active user sessions",
     format: (value: number) => value.toString(),
@@ -47,12 +47,12 @@ const kpiData = [
   },
 ];
 
-export function KpiCards({ metrics, onCardClick, activeView }: KpiCardsProps) {
+export function KpiCards({ onCardClick, activeView, ...metrics }: KpiCardsProps) {
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
-      {kpiData.map((kpi) => {
+      {kpiConfig.map((kpi) => {
         const Icon = kpi.icon;
-        const value = metrics[kpi.key as keyof Metrics];
+        const value = metrics[kpi.key];
         const isActive = activeView === kpi.key;
 
         const cardInnerContent = (
