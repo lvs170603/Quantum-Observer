@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -26,13 +27,11 @@ interface AnomalyDialogProps {
 export function AnomalyDialog({ jobs, isOpen, onOpenChange }: AnomalyDialogProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<{anomalies: Anomaly[], summary: string} | null>(null)
-  const [hasAnalyzed, setHasAnalyzed] = useState(false)
   const { toast } = useToast()
 
   const handleAnalysis = async () => {
     setIsLoading(true)
     setAnalysisResult(null)
-    setHasAnalyzed(true)
     try {
       const jobData = JSON.stringify(jobs.map(({ id, status, backend, submitted, elapsed_time, status_history }) => ({ id, status, backend, submitted, elapsed_time, status_history })));
       const result = await analyzeJobAnomalies({ jobData })
@@ -52,7 +51,6 @@ export function AnomalyDialog({ jobs, isOpen, onOpenChange }: AnomalyDialogProps
   const handleClose = (open: boolean) => {
     if (!open) {
       setAnalysisResult(null)
-      setHasAnalyzed(false)
     }
     onOpenChange(open)
   }
@@ -112,7 +110,7 @@ export function AnomalyDialog({ jobs, isOpen, onOpenChange }: AnomalyDialogProps
             </div>
           )}
           
-          {!isLoading && !hasAnalyzed && (
+          {!isLoading && !analysisResult && (
              <div className="text-center text-muted-foreground py-8">
                 <BrainCircuit className="mx-auto h-12 w-12" />
                 <p className="mt-4">Ready to analyze {jobs.length} jobs.</p>
@@ -122,7 +120,7 @@ export function AnomalyDialog({ jobs, isOpen, onOpenChange }: AnomalyDialogProps
         <DialogFooter>
           <Button variant="outline" onClick={() => handleClose(false)}>Close</Button>
           <Button onClick={handleAnalysis} disabled={isLoading}>
-            {isLoading ? "Analyzing..." : "Run Analysis"}
+            {isLoading ? "Analyzing..." : analysisResult ? "Re-run Analysis" : "Run Analysis"}
           </Button>
         </DialogFooter>
       </DialogContent>
