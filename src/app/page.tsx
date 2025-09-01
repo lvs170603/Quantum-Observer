@@ -47,29 +47,8 @@ export default function Home() {
 
   const { toast } = useToast();
 
-  const fetchDemoData = useCallback(async () => {
-    try {
-      const fallbackResponse = await fetch("/api/mock?demo=true");
-      if (!fallbackResponse.ok) {
-         throw new Error('Failed to fetch even the demo data.');
-      }
-      const fallbackData = await fallbackResponse.json();
-      setJobs(fallbackData.jobs);
-      setBackends(fallbackData.backends);
-      setMetrics(fallbackData.metrics);
-      setChartData(fallbackData.chartData);
-      setLastUpdated(new Date());
-    } catch (e) {
-      console.error("Fatal: Could not load any data.", e);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Could not load any data. Please check your connection or contact support.",
-      });
-    }
-  }, [toast]);
-
   const fetchData = useCallback(async () => {
+    if (isFetching) return;
     setIsFetching(true);
     
     const url = `/api/mock?demo=${isDemo}`;
@@ -92,19 +71,21 @@ export default function Home() {
       console.error("Failed to fetch data:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to fetch dashboard data. Using local demo data as fallback.",
+        title: "Error fetching data",
+        description: "Could not retrieve live data. Displaying local demo data as a fallback. Please check the API connection.",
       });
       // Fallback to demo data if the API fails
-      if (!isDemo) setIsDemo(true); 
-      await fetchDemoData();
+      if (!isDemo) setIsDemo(true);
     } finally {
       setIsFetching(false);
     }
-  }, [isDemo, toast, fetchDemoData]);
+  }, [isDemo, isFetching, toast]);
 
   useEffect(() => {
     fetchData();
+    // We only want to run this on the initial load and when the demo mode is toggled.
+    // The auto-refresh interval is handled separately.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDemo]);
   
   useEffect(() => {
@@ -112,7 +93,7 @@ export default function Home() {
       const intervalId = setInterval(() => fetchData(), REFRESH_INTERVAL);
       return () => clearInterval(intervalId);
     }
-  }, [autoRefresh, isDemo, fetchData]);
+  }, [autoRefresh, fetchData]);
 
   useEffect(() => {
     let newFilteredJobs = jobs;
@@ -194,7 +175,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40">
+    <div className="flex min-h-screen w-full flex-col bg-background text-foreground">
       <DashboardHeader
         isDemo={isDemo}
         onToggleDemo={handleToggleDemo}
@@ -204,9 +185,10 @@ export default function Home() {
         onAnalyze={() => setIsAnomalyDialogOpen(true)}
         onOpenFilters={() => setIsFilterSheetOpen(true)}
         isFetching={isFetching}
+        onRefresh={fetchData}
       />
       <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
-        {metrics && <KpiCards {...metrics} onCardClick={handleKpiCardClick} activeView={chartView} />}
+        {metrics && <KpiCards onCardClick={handleKpiCardClick} activeView={chartView} {...metrics} />}
         
         <div className="hidden md:flex md:items-center md:justify-between">
            <FilterControls />
