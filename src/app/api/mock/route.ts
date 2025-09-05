@@ -1,6 +1,7 @@
+
 import { NextResponse } from 'next/server';
 import type { Job, Backend, Metrics, ChartData, JobStatus } from "@/lib/types";
-import { subMinutes, subHours, formatISO } from "date-fns";
+import { subMinutes, subHours, formatISO, parseISO } from "date-fns";
 import { generateCircuitDiagram } from '@/ai/flows/generate-circuit-diagram';
 
 // This function generates dynamic mock data, simulating a real API response.
@@ -122,45 +123,125 @@ async function generateMockData() {
   };
 }
 
+async function getRealData(apiKey: string) {
+    const API_BASE_URL = "https://api.quantum-computing.ibm.com/v2";
+    const headers = { Authorization: `Bearer ${apiKey}` };
+
+    // Fetch backends and jobs in parallel
+    const [backendsResponse, jobsResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/backends`, { headers }),
+        fetch(`${API_BASE_URL}/jobs?limit=50&descending=true`, { headers })
+    ]);
+
+    if (!backendsResponse.ok) throw new Error(`Failed to fetch backends: ${backendsResponse.statusText}`);
+    if (!jobsResponse.ok) throw new Error(`Failed to fetch jobs: ${jobsResponse.statusText}`);
+
+    const apiBackends = await backendsResponse.json();
+    const apiJobs = await jobsResponse.json();
+    const now = new Date();
+
+    // Transform backends
+    const backends: Backend[] = apiBackends.map((b: any) => ({
+        name: b.name,
+        status: b.status.toLowerCase() as "active" | "inactive" | "maintenance",
+        qubit_count: b.qubit_count,
+        queue_depth: b.queue_length,
+        error_rate: b.error_rate || 0.0, // Default to 0 if not provided
+    }));
+
+    // Transform jobs
+    const jobs: Job[] = apiJobs.map((j: any) => {
+        const submitted = parseISO(j.creation_date);
+        const startTime = j.time_per_step?.running ? parseISO(j.time_per_step.running) : submitted;
+        const endTime = j.time_per_step?.finished ? parseISO(j.time_per_step.finished) : now;
+
+        const status_history = [
+          { status: 'QUEUED' as JobStatus, timestamp: formatISO(submitted) }
+        ];
+
+        if(j.time_per_step?.running) status_history.push({status: 'RUNNING' as JobStatus, timestamp: formatISO(startTime)});
+
+        if(j.status !== 'RUNNING' && j.status !== 'QUEUED') {
+            status_history.push({ status: j.status.toUpperCase() as JobStatus, timestamp: formatISO(endTime) });
+        }
+        
+        return {
+            id: j.id,
+            status: j.status.toUpperCase() as JobStatus,
+            backend: j.backend,
+            submitted: j.creation_date,
+            elapsed_time: (endTime.getTime() - startTime.getTime()) / 1000,
+            user: j.hub_info?.user || 'Unknown',
+            qpu_seconds: j.usage?.qpu_seconds || 0,
+            logs: j.error?.message || `Job status: ${j.status}`,
+            results: j.result || {},
+            status_history,
+            circuit_image_url: "https://picsum.photos/800/200", // Placeholder, as live API doesn't provide this.
+        };
+    });
+
+    // Generate metrics and chart data from the live job data
+    const liveJobs = jobs.filter(j => j.status === 'RUNNING' || j.status === 'QUEUED').length;
+    const successfulJobs = jobs.filter(j => j.status === 'COMPLETED').length;
+    const totalCompletedOrError = successfulJobs + jobs.filter(j => j.status === 'ERROR').length;
+
+    const avgWaitTime = jobs.reduce((acc, j) => {
+        const runningEntry = j.status_history.find(s => s.status === 'RUNNING');
+        if (runningEntry) {
+            return acc + (new Date(runningEntry.timestamp).getTime() - new Date(j.submitted).getTime());
+        }
+        return acc;
+    }, 0) / (1000 * jobs.length || 1);
+
+    const metrics: Metrics = {
+        live_jobs: liveJobs,
+        avg_wait_time: avgWaitTime,
+        success_rate: totalCompletedOrError > 0 ? (successfulJobs / totalCompletedOrError) * 100 : 100,
+        open_sessions: 1, // This is a mock value as the API doesn't provide it
+    };
+
+    const chartData: ChartData[] = Array.from({ length: 12 }, (_, i) => {
+        const time = subHours(now, 11 - i);
+        const timePlusHour = subHours(now, 10-i);
+        const jobsInWindow = jobs.filter(j => {
+            const submittedDate = parseISO(j.submitted);
+            return submittedDate >= time && submittedDate < timePlusHour;
+        });
+
+        return {
+            time: formatISO(time).substring(11, 16),
+            COMPLETED: jobsInWindow.filter(j => j.status === 'COMPLETED').length,
+            RUNNING: jobsInWindow.filter(j => j.status === 'RUNNING').length,
+            QUEUED: jobsInWindow.filter(j => j.status === 'QUEUED').length,
+            ERROR: jobsInWindow.filter(j => j.status === 'ERROR').length,
+        };
+    });
+    
+    return { jobs, backends, metrics, chartData };
+}
+
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const isDemo = searchParams.get('demo') === 'true'
   const apiKey = process.env.QISKIT_API_KEY;
 
-
-  // If not in demo mode and an API key is present, fetch from Qiskit.
-  // Otherwise, fall back to mock data.
   if (!isDemo && apiKey) {
     try {
-      // =================================================================
-      // TODO: IMPLEMENT QISKIT API FETCHING LOGIC HERE
-      // =================================================================
-      // 1. Use the `apiKey` to authenticate with the IBM Quantum API.
-      //    The base URL is likely: https://api.quantum-computing.ibm.com/
-      //
-      // 2. Fetch the list of jobs and backends from the relevant endpoints.
-      //    You will need to set the `Authorization` header with your token.
-      //    Example: `Authorization: 'Bearer ' + apiKey`
-      //
-      // 3. Transform the data from the API response to match the `Job`, 
-      //    `Backend`, `Metrics`, and `ChartData` types defined in `src/lib/types.ts`.
-      //
-      // 4. Return the transformed data as JSON.
-      //
-      // For now, we will return an error message and then fall back to mock data.
-      // =================================================================
-
-      // Replace this with your actual API call.
-      console.warn("Qiskit API not implemented. Falling back to mock data.");
-
+      console.log("Fetching real data from Qiskit API...");
+      const realData = await getRealData(apiKey);
+      return NextResponse.json(realData);
     } catch (error) {
        console.error("Error fetching from Qiskit API:", error);
-       // If the API call fails, we can still fall back to mock data.
+       // If the API call fails, we fall back to mock data.
+       const mockData = await generateMockData();
+       return NextResponse.json(mockData);
     }
   }
   
+  // Default to mock data if in demo mode or no API key is provided
   const data = await generateMockData();
-  
   return NextResponse.json(data);
 }
+
+    
