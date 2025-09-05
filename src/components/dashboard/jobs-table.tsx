@@ -1,3 +1,4 @@
+
 "use client"
 
 import {
@@ -48,7 +49,7 @@ export function JobsTable({ jobs, onJobSelect }: JobsTableProps) {
                 <TableHead>Status</TableHead>
                 <TableHead className="hidden md:table-cell">Backend</TableHead>
                 <TableHead className="hidden sm:table-cell">Submitted</TableHead>
-                <TableHead className="hidden lg:table-cell">User</TableHead>
+                <TableHead>User</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -64,7 +65,7 @@ export function JobsTable({ jobs, onJobSelect }: JobsTableProps) {
                   <TableCell className="hidden sm:table-cell">
                     {formatDistanceToNow(new Date(job.submitted), { addSuffix: true })}
                   </TableCell>
-                  <TableCell className="hidden lg:table-cell">{job.user}</TableCell>
+                  <TableCell>{job.user}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
