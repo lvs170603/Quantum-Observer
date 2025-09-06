@@ -1,0 +1,55 @@
+diff --git a/node_modules/handlebars/lib/index.js b/node_modules/handlebars/lib/index.js
+index 095f9c5..78d1e3d 100644
+--- a/node_modules/handlebars/lib/index.js
++++ b/node_modules/handlebars/lib/index.js
+@@ -1,5 +1,6 @@
+ import base from './handlebars/base';
+ 
+ // Each of these augment the Handlebars object. No need to setup a temporary object.
+ import SafeString from './handlebars/safe-string';
+ import Exception from './handlebars/exception';
+ import * as Utils from './handlebars/utils';
+ import * as runtime from './handlebars/runtime';
+ 
+ import noConflict from './handlebars/no-conflict';
+ 
+ // For compatibility and usage outside of module systems, make the Handlebars object a namespace
+ function create() {
+   let hb = new base.HandlebarsEnvironment();
+ 
+   Utils.extend(hb, base);
+   hb.SafeString = SafeString;
+   hb.Exception = Exception;
+   hb.Utils = Utils;
+   hb.escapeExpression = Utils.escapeExpression;
+ 
+   hb.VM = runtime;
+   hb.template = function (spec) {
+     return runtime.template(spec, hb);
+   };
+ 
+   return hb;
+ }
+ 
+ let inst = create();
+ inst.create = create;
+ 
+ noConflict(inst);
+ 
+ inst.default = inst;
+ 
+ export default inst;
+ // try {
+ //   // eslint-disable-next-line no-undef
+ //   if (typeof define === 'function' && define.amd) {
+ //     // eslint-disable-next-line no-undef
+ //     define([], () => {
+ //       return inst;
+ //     });
+ //     // eslint-disable-next-line no-undef
+ //   } else if (typeof module === 'object' && module.exports) {
+ //     module.exports = inst;
+ //   }
+ // } catch (err) {
+ //   // NOP
+ // }
