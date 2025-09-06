@@ -93,22 +93,33 @@ The project follows a standard Next.js App Router structure, with clear separati
 
 ```
 quantum-observer/
-├── public/                     # Static assets (images, icons, etc.)
+├── public/                 # Static assets (images, icons, etc.)
 ├── src/
-│   ├── app/                    # Next.js App Router (pages & layouts)
-│   │   └── api/                # API routes (mock data)
-│   ├── components/             # Reusable React components
-│   │   ├── dashboard/          # Dashboard-specific components
-│   │   ├── ui/                 # ShadCN UI components
-│   │   └── providers/          # React Context Providers
-│   ├── ai/                     # Genkit AI logic
-│   │   ├── flows/              # AI pipelines (anomaly detection, etc.)
-│   │   └── genkit.ts           # Genkit initialization
-│   ├── hooks/                  # Custom React hooks
-│   └── lib/                    # Utility functions & types
-├── .env                        # Environment variable template
-├── next.config.ts              # Next.js configuration
-├── tailwind.config.ts          # Tailwind CSS configuration
-├── tsconfig.json               # TypeScript configuration
-└── package.json
+│   ├── app/                # Next.js App Router for pages and layouts
+│   │   ├── api/            # API routes
+│   │   │   └── mock/       # API for mock and real data
+│   │   │       └── route.ts
+│   │   ├── globals.css     # Global styles and ShadCN theme
+│   │   ├── layout.tsx      # Root layout for the application
+│   │   └── page.tsx        # Main page component
+│   │
+│   ├── components/         # Reusable React components
+│   │   ├── dashboard/      # Dashboard-specific components
+│   │   ├── ui/             # ShadCN UI components
+│   │   └── providers/      # React Context Providers (e.g., ThemeProvider)
+│   │
+│   ├── ai/                 # Genkit AI logic
+│   │   ├── flows/          # AI flows for specific tasks
+│   │   └── genkit.ts       # Genkit initialization
+│   │
+│   ├── hooks/              # Custom React hooks (e.g., useToast)
+│   └── lib/                # Utility functions and type definitions
+│       ├── types.ts        # TypeScript type definitions
+│       └── utils.ts        # Utility functions (e.g., cn for classnames)
+│
+├── .env                    # Environment variable template
+├── next.config.ts          # Next.js configuration
+├── tailwind.config.ts      # Tailwind CSS configuration
+├── tsconfig.json           # TypeScript configuration
+└── package.json            # Project dependencies and scripts
 ```
