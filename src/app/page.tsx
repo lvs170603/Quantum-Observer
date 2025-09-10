@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import type { Job, Backend, Metrics, ChartData, JobStatus } from "@/lib/types";
+import type { Job, Backend, Metrics, ChartData, JobStatus, DailyJobSummary } from "@/lib/types";
 import { KpiCards } from "@/components/dashboard/kpi-cards";
 import { BackendsGrid } from "@/components/dashboard/backends-grid";
 import { JobsTable } from "@/components/dashboard/jobs-table";
@@ -10,6 +10,7 @@ import { StatusChart } from "@/components/dashboard/status-chart";
 import { JobDetailsDrawer } from "@/components/dashboard/job-details-drawer";
 import { AnomalyDialog } from "@/components/dashboard/anomaly-dialog";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { DailySummaryChart } from "@/components/dashboard/daily-summary-chart";
 import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ export default function Home() {
   const [backends, setBackends] = useState<Backend[]>([]);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [chartData, setChartData] = useState<ChartData[]>([]);
+  const [dailySummary, setDailySummary] = useState<DailyJobSummary | null>(null);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isAnomalyDialogOpen, setIsAnomalyDialogOpen] = useState(false);
@@ -65,6 +67,7 @@ export default function Home() {
       setBackends(data.backends);
       setMetrics(data.metrics);
       setChartData(data.chartData);
+      setDailySummary(data.dailySummary);
       setLastUpdated(new Date());
 
     } catch (error) {
@@ -198,7 +201,8 @@ export default function Home() {
           <div className="lg:col-span-3">
             <JobsTable jobs={filteredJobs} onJobSelect={handleJobSelect} />
           </div>
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-4">
+            {dailySummary && <DailySummaryChart data={dailySummary} />}
             <BackendsGrid backends={backends} />
           </div>
         </div>

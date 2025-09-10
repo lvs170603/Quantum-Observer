@@ -1,3 +1,4 @@
+
 export type JobStatus = "COMPLETED" | "RUNNING" | "QUEUED" | "ERROR" | "CANCELLED";
 
 export interface Job {
@@ -41,4 +42,10 @@ export interface Anomaly {
   jobId: string;
   anomalyDescription: string;
   severity: "low" | "medium" | "high";
+}
+
+export interface DailyJobSummary {
+  date: string;
+  totalCompleted: number;
+  completedByBackend: { name: string; value: number; fill: string; }[];
 }

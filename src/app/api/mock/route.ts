@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
-import type { Job, Backend, Metrics, ChartData, JobStatus } from "@/lib/types";
-import { subMinutes, subHours, formatISO, parseISO } from "date-fns";
+import type { Job, Backend, Metrics, ChartData, JobStatus, DailyJobSummary } from "@/lib/types";
+import { subMinutes, subHours, formatISO, parseISO, isToday, startOfDay } from "date-fns";
 import { generateCircuitDiagram } from '@/ai/flows/generate-circuit-diagram';
 
 const API_BASE_URL = process.env.QISKIT_API_BASE_URL || "https://api-qcon.quantum-computing.ibm.com/api";
@@ -9,6 +9,30 @@ const API_KEY = process.env.QISKIT_API_KEY;
 
 // ✅ Simple in-memory cache for mock data (optional)
 let mockCache: { data: any; timestamp: number } | null = null;
+
+function calculateDailySummary(jobs: Job[]): DailyJobSummary {
+  const today = new Date();
+  const todaysCompletedJobs = jobs.filter(job => 
+    job.status === 'COMPLETED' && isToday(parseISO(job.submitted))
+  );
+
+  const completedByBackend = todaysCompletedJobs.reduce((acc, job) => {
+    acc[job.backend] = (acc[job.backend] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const chartData = Object.entries(completedByBackend).map(([name, value]) => ({
+    name,
+    value,
+    fill: `hsl(var(--chart-${(Object.keys(completedByBackend).indexOf(name) % 5) + 1}))`,
+  }));
+
+  return {
+    date: formatISO(startOfDay(today)),
+    totalCompleted: todaysCompletedJobs.length,
+    completedByBackend: chartData,
+  };
+}
 
 // ✅ Generate mock data (cached for 1 minute to improve performance)
 async function generateMockData() {
@@ -95,7 +119,9 @@ async function generateMockData() {
     };
   });
 
-  const data = { jobs: mockJobs, backends: mockBackends, metrics: mockMetrics, chartData: mockChartData };
+  const dailySummary = calculateDailySummary(mockJobs);
+
+  const data = { jobs: mockJobs, backends: mockBackends, metrics: mockMetrics, chartData: mockChartData, dailySummary };
   mockCache = { data, timestamp: Date.now() };
 
   return { ...data, source: "mock" };
@@ -186,7 +212,9 @@ async function getRealData(apiKey: string) {
     };
   });
 
-  return { jobs, backends, metrics, chartData, source: "real" };
+  const dailySummary = calculateDailySummary(jobs);
+
+  return { jobs, backends, metrics, chartData, dailySummary, source: "real" };
 }
 
 export async function GET(request: Request) {
