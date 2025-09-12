@@ -44,7 +44,7 @@ export default function DashboardPage() {
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
-    if (isFetching) return;
+    if (isFetching && lastUpdated) return; // Prevent refetch if already fetching, unless it's the initial load
     setIsFetching(true);
     const url = `/api/mock?demo=${isDemo}`;
     try {
@@ -79,7 +79,7 @@ export default function DashboardPage() {
     } finally {
       setIsFetching(false);
     }
-  }, [isDemo, toast, isFetching]);
+  }, [isDemo, toast, isFetching, lastUpdated]);
 
   useEffect(() => {
     // Initial fetch, ignoring the isFetching check
@@ -169,7 +169,6 @@ export default function DashboardPage() {
         onToggleRefresh={setAutoRefresh}
         lastUpdated={lastUpdated}
         onAnalyze={() => setIsAnomalyDialogOpen(true)}
-        onOpenFilters={() => {}}
         isFetching={isFetching}
         onRefresh={fetchData}
         onOpenProfile={() => setIsProfileSheetOpen(true)}
