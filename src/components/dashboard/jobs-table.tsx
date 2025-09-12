@@ -91,7 +91,7 @@ export function JobsTable({
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex-1">
                 <CardTitle>Live Jobs</CardTitle>
-                <CardDescription>A list of recent and ongoing quantum jobs.</CardDescription>
+                <CardDescription>Recent and ongoing quantum jobs.</CardDescription>
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
                 <div className="relative w-full md:w-auto">
