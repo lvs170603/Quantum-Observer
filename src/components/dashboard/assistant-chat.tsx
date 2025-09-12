@@ -46,14 +46,15 @@ export function AssistantChat() {
     if (!input.trim() || isLoading) return;
 
     const userMessage: Message = { text: input, sender: 'user' };
-    setMessages(prev => [...prev, userMessage]);
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInput('');
     setIsLoading(true);
 
     try {
-      const history = messages.reduce((acc, msg, i) => {
-        if (msg.sender === 'user' && messages[i+1]?.sender === 'bot') {
-            acc.push({ user: msg.text, assistant: messages[i+1].text });
+      const history = newMessages.reduce((acc, msg, i) => {
+        if (msg.sender === 'user' && newMessages[i-1]?.sender === 'bot') {
+            acc.push({ user: msg.text, assistant: newMessages[i-1].text });
         }
         return acc;
       }, [] as { user: string, assistant: string }[]);

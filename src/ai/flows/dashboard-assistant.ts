@@ -79,7 +79,14 @@ Answer user questions based on the features listed below. When a user's query di
 - **Active Sessions Page:** Shows a list of active user sessions. (Action: 'SHOW_SESSIONS')
 - **Anomaly Detection:** An AI-powered feature to identify unusual job patterns.
 
-Conversation history (if any): {{{history}}}
+{{#if history}}
+Conversation history:
+{{#each history}}
+- User: {{{user}}}
+- Assistant: {{{assistant}}}
+{{/each}}
+{{/if}}
+
 User question: {{{query}}}
 `,
 });
