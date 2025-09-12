@@ -1,7 +1,8 @@
 
 "use client"
 
-import { BrainCircuit, RefreshCw, SlidersHorizontal, User } from "lucide-react"
+import { useState, useEffect } from "react"
+import { BrainCircuit, RefreshCw, SlidersHorizontal, User, ListFilter } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { ThemeToggle } from "@/components/dashboard/theme-toggle"
 import { Button } from "@/components/ui/button"
@@ -40,6 +41,12 @@ export function DashboardHeader({
   onOpenProfile,
 }: DashboardHeaderProps) {
   const router = useRouter();
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
 
   const handleLogout = () => {
     // In a real app, you'd clear session/token here
@@ -92,6 +99,11 @@ export function DashboardHeader({
         <h1 className="text-lg font-semibold md:text-xl">Quantum Observer</h1>
       </div>
       <div className="flex w-full items-center justify-end gap-2 md:gap-4">
+         {hasMounted && lastUpdated && (
+          <span className="text-xs text-muted-foreground hidden lg:block">
+            Last updated {formatDistanceToNow(lastUpdated, { addSuffix: true })}
+          </span>
+        )}
         <div className="hidden items-center gap-4 md:flex">
           <div className="flex items-center gap-2">
             <Label htmlFor="demo-mode" className="text-sm font-medium">
@@ -161,3 +173,5 @@ export function DashboardHeader({
     </header>
   );
 }
+
+    
