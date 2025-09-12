@@ -39,16 +39,28 @@ const downloadFile = (content: string, fileName: string, contentType: string) =>
 
 const convertToCSV = (jobs: Job[]) => {
   if (jobs.length === 0) return '';
-  const headers = ['id', 'status', 'backend', 'submitted', 'elapsed_time', 'user', 'qpu_seconds'];
+  const headers = ['id', 'status', 'backend', 'submitted', 'elapsed_time', 'user', 'qpu_seconds', 'logs', 'results', 'status_history', 'circuit_image_url'];
   const csvRows = [headers.join(',')];
   jobs.forEach(job => {
     const values = headers.map(header => {
       const value = job[header as keyof Job];
-      // Handle values that might contain commas
-      if (typeof value === 'string' && value.includes(',')) {
-        return `"${value}"`;
+      
+      if (value === null || value === undefined) {
+        return '';
       }
-      return value;
+
+      // Stringify complex objects
+      if (typeof value === 'object') {
+        return `"${JSON.stringify(value).replace(/"/g, '""')}"`;
+      }
+      
+      const stringValue = String(value);
+      // Escape double quotes and wrap in double quotes if it contains a comma
+      if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+        return `"${stringValue.replace(/"/g, '""')}"`;
+      }
+
+      return stringValue;
     });
     csvRows.push(values.join(','));
   });
