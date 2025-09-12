@@ -4,8 +4,7 @@ import type { Job, Backend, Metrics, ChartData, JobStatus, DailyJobSummary } fro
 import { subMinutes, subHours, formatISO, parseISO, isToday, startOfDay } from "date-fns";
 import { generateCircuitDiagram } from '@/ai/flows/generate-circuit-diagram';
 
-const API_BASE_URL = process.env.QISKIT_API_BASE_URL || "https://api-qcon.quantum-computing.ibm.com/api";
-const API_KEY = process.env.QISKIT_API_KEY;
+const API_BASE_URL = process.env.BACKEND_API_URL || "http://localhost:8000";
 
 // ✅ Simple in-memory cache for mock data (optional)
 let mockCache: { data: any; timestamp: number } | null = null;
@@ -128,17 +127,17 @@ async function generateMockData() {
   return { ...data, source: "mock" };
 }
 
-async function getRealData(apiKey: string) {
-  const headers = { Authorization: `Bearer ${apiKey}` };
-  const now = new Date();
-
+async function getRealData() {
   const [backendsResponse, jobsResponse] = await Promise.all([
-    fetch(`${API_BASE_URL}/devices/v/1`, { headers }),
-    fetch(`${API_BASE_URL}/jobs/v/2?limit=50&descending=true`, { headers })
+    fetch(`${API_BASE_URL}/api/backends`),
+    fetch(`${API_BASE_URL}/api/jobs?limit=50`)
   ]);
 
-  if (!backendsResponse.ok || !jobsResponse.ok) {
-    throw new Error(`IBM API Error: ${backendsResponse.status} ${backendsResponse.statusText} / ${jobsResponse.status} ${jobsResponse.statusText}`);
+  if (!backendsResponse.ok) {
+    throw new Error(`Backend API Error: ${backendsResponse.status} ${backendsResponse.statusText}`);
+  }
+   if (!jobsResponse.ok) {
+    throw new Error(`Jobs API Error: ${jobsResponse.status} ${jobsResponse.statusText}`);
   }
 
   const apiBackends = await backendsResponse.json();
@@ -147,36 +146,24 @@ async function getRealData(apiKey: string) {
   const backends: Backend[] = apiBackends.map((b: any) => ({
     name: b.name,
     status: b.status.toLowerCase() as "active" | "inactive" | "maintenance",
-    qubit_count: b.n_qubits,
-    queue_depth: b.backend_status?.pending_jobs || 0,
+    qubit_count: b.qubit_count,
+    queue_depth: b.queue_depth,
     error_rate: b.error_rate || 0.0,
   }));
 
-  const jobs: Job[] = apiJobs.content.map((j: any) => {
-    const submitted = parseISO(j.creation_date);
-    const startTime = j.time_per_step?.running ? parseISO(j.time_per_step.running) : submitted;
-    const endTime = j.time_per_step?.finished ? parseISO(j.time_per_step.finished) : now;
-
-    const status_history = [{ status: 'QUEUED' as JobStatus, timestamp: formatISO(submitted) }];
-    if (j.time_per_step?.running) status_history.push({ status: 'RUNNING' as JobStatus, timestamp: formatISO(startTime) });
-    if (!['RUNNING', 'QUEUED'].includes(j.status)) {
-      status_history.push({ status: j.status.toUpperCase() as JobStatus, timestamp: formatISO(endTime) });
-    }
-
-    return {
-      id: j.id,
-      status: j.status.toUpperCase() as JobStatus,
-      backend: j.backend,
-      submitted: j.creation_date,
-      elapsed_time: (endTime.getTime() - startTime.getTime()) / 1000,
-      user: j.hub_info?.user || 'Unknown',
-      qpu_seconds: j.usage?.qpu_seconds || 0,
-      logs: j.error?.message || `Job status: ${j.status}`,
-      results: j.result || {},
-      status_history,
-      circuit_image_url: "https://picsum.photos/800/200",
-    };
-  });
+  const jobs: Job[] = apiJobs.map((j: any) => ({
+    id: j.id,
+    status: j.status.toUpperCase() as JobStatus,
+    backend: j.backend,
+    submitted: j.submitted,
+    elapsed_time: j.elapsed_time,
+    user: j.user,
+    qpu_seconds: j.qpu_seconds || 0,
+    logs: j.logs,
+    results: j.results || {},
+    status_history: j.status_history,
+    circuit_image_url: "https://picsum.photos/seed/circuit/800/200", // placeholder
+  }));
 
   const liveJobs = jobs.filter(j => j.status === 'RUNNING' || j.status === 'QUEUED').length;
   const successfulJobs = jobs.filter(j => j.status === 'COMPLETED').length;
@@ -196,7 +183,8 @@ async function getRealData(apiKey: string) {
     success_rate: totalCompletedOrError > 0 ? (successfulJobs / totalCompletedOrError) * 100 : 100,
     open_sessions: 1, // This is a mock value as session count is not available from the API
   };
-
+  
+  const now = new Date();
   const chartData: ChartData[] = Array.from({ length: 12 }, (_, i) => {
     const time = subHours(now, 11 - i);
     const timePlusHour = subHours(now, 10 - i);
@@ -223,10 +211,10 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const isDemo = searchParams.get('demo') === 'true';
 
-  if (!isDemo && API_KEY) {
+  if (!isDemo) {
     try {
-      console.log("✅ Fetching real data from IBM Quantum API...");
-      const realData = await getRealData(API_KEY);
+      console.log("✅ Fetching real data from Python backend...");
+      const realData = await getRealData();
       return NextResponse.json(realData);
     } catch (error) {
       console.error("❌ Error fetching real data:", error);
@@ -235,7 +223,7 @@ export async function GET(request: Request) {
     }
   }
 
-  console.warn("⚠ Using mock data (demo mode or no API key).");
+  console.warn("⚠ Using mock data (demo mode).");
   const mockData = await generateMockData();
   return NextResponse.json(mockData);
 }

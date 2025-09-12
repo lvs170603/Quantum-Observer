@@ -35,7 +35,7 @@ const kpiConfig = [
     key: "avg_wait_time" as const,
     icon: Clock,
     description: "Average time jobs spend in queue",
-    format: (value: number) => `${Math.round(value / 60)}m ${Math.round(value % 60)}s`,
+    format: (value: number) => value > 0 ? `${Math.round(value / 60)}m ${Math.round(value % 60)}s` : 'N/A',
     clickable: false,
   },
   {
@@ -67,7 +67,7 @@ export function KpiCards({ onCardClick, activeView, ...metrics }: KpiCardsProps)
     }
   };
 
-  const kpiItems = kpiConfig.filter(kpi => metrics[kpi.key] !== undefined);
+  const kpiItems = kpiConfig.filter(kpi => metrics[kpi.key] !== undefined && metrics[kpi.key] !== null);
 
 
   return (

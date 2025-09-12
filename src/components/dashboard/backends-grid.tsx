@@ -1,3 +1,4 @@
+
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,7 +11,7 @@ interface BackendsGridProps {
   backends: Backend[]
 }
 
-const statusConfig = {
+const statusConfig: Record<Backend['status'], { icon: React.ElementType, color: string, label: string }> = {
   active: {
     icon: CheckCircle,
     color: "bg-green-500",
@@ -50,7 +51,7 @@ export function BackendsGrid({ backends }: BackendsGridProps) {
           </TableHeader>
           <TableBody>
             {backends.map((backend) => {
-               const config = statusConfig[backend.status];
+               const config = statusConfig[backend.status] || statusConfig.inactive;
                return (
                 <TableRow key={backend.name}>
                     <TableCell>
