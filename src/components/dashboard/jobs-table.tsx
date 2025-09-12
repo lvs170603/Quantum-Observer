@@ -147,14 +147,13 @@ export function JobsTable({
                 <TableHead className="hidden md:table-cell">Backend</TableHead>
                 <TableHead className="hidden sm:table-cell">Submitted</TableHead>
                 <TableHead>User</TableHead>
-                <TableHead><span className="sr-only">Actions</span></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isFetching && jobs.length === 0 ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell colSpan={6} className="h-12 text-center">
+                    <TableCell colSpan={5} className="h-12 text-center">
                       <span className="animate-pulse">Loading...</span>
                     </TableCell>
                   </TableRow>
@@ -173,26 +172,11 @@ export function JobsTable({
                         {formatDistanceToNow(new Date(job.submitted), { addSuffix: true })}
                       </TableCell>
                       <TableCell>{job.user}</TableCell>
-                      <TableCell onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => onJobSelect(job)}>View Details</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleCopy(job.id)}>Copy Job ID</DropdownMenuItem>
-                            <DropdownMenuItem disabled>Cancel Job</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
                     </TableRow>
                   ))
               ) : (
                  <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={5} className="h-24 text-center">
                       No results found for your filters.
                     </TableCell>
                   </TableRow>
