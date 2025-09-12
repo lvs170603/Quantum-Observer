@@ -15,7 +15,6 @@ import { AnomalyDialog } from "@/components/dashboard/anomaly-dialog";
 import { ProfileSheet } from "@/components/dashboard/profile-sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AssistantChat } from "@/components/dashboard/assistant-chat";
-import { GanttChart } from "@/components/dashboard/gantt-chart";
 
 type ChartView = "all" | "live_jobs" | "success_rate";
 
@@ -253,12 +252,6 @@ export default function DashboardPage() {
 
         {chartData.length > 0 ? (
             <StatusChart data={chartData} view={chartView} />
-        ) : (
-            <Skeleton className="h-[450px]" />
-        )}
-
-        {jobs.length > 0 ? (
-            <GanttChart jobs={jobs} />
         ) : (
             <Skeleton className="h-[450px]" />
         )}

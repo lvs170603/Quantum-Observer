@@ -50,10 +50,3 @@ export interface DailyJobSummary {
   totalCompleted: number;
   completedByBackend: { name: string; value: number; fill: string; }[];
 }
-
-export interface GanttChartDataPoint {
-  name: string;
-  queued: number;
-  running: number;
-  completed: number;
-}
