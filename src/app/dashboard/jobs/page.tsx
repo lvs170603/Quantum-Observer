@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, FileText } from "lucide-react";
 import type { Job } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -73,10 +73,13 @@ export default function AllJobsPage() {
       <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
         <Card>
           <CardHeader>
-             <div className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>All Jobs</CardTitle>
-                <CardDescription>A complete list of all jobs in the system.</CardDescription>
+            <div className="flex flex-row items-center justify-between">
+              <div className="flex items-center gap-4">
+                <FileText className="h-6 w-6 text-muted-foreground" />
+                <div>
+                  <CardTitle>All Jobs</CardTitle>
+                  <CardDescription>A complete list of all jobs in the system.</CardDescription>
+                </div>
               </div>
               <Button variant="outline" size="sm">
                 <Download className="mr-2 h-4 w-4" />
