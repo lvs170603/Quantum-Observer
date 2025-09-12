@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Analyzes job data to detect anomalies in queueing and execution behavior.
@@ -19,11 +20,11 @@ const AnalyzeJobAnomaliesOutputSchema = z.object({
   anomalies: z.array(
     z.object({
       jobId: z.string().describe('The ID of the job with anomalous behavior.'),
-      anomalyDescription: z.string().describe('A description of the anomaly detected.'),
+      anomalyDescription: z.string().describe('A detailed, easy-to-understand explanation of the anomaly, suitable for both students and researchers. It should explain what the anomaly is, why it is a concern, and what it might indicate.'),
       severity: z.enum(['low', 'medium', 'high']).describe('The severity of the anomaly.'),
     })
   ).describe('An array of anomalies detected in the job data.'),
-  summary: z.string().describe('A summary of the analysis, including the total number of anomalies found.'),
+  summary: z.string().describe('A summary of the analysis, including the total number of anomalies found and a brief overview of the system\'s health.'),
 });
 export type AnalyzeJobAnomaliesOutput = z.infer<typeof AnalyzeJobAnomaliesOutputSchema>;
 
@@ -35,29 +36,25 @@ const prompt = ai.definePrompt({
   name: 'analyzeJobAnomaliesPrompt',
   input: {schema: AnalyzeJobAnomaliesInputSchema},
   output: {schema: AnalyzeJobAnomaliesOutputSchema},
-  prompt: `You are an AI system administrator analyzing quantum computing job data to detect anomalies.
+  prompt: `You are an expert AI system administrator for a quantum computing platform. Your task is to analyze job data to detect and explain anomalies in a way that is clear for both students and expert researchers.
 
-  Analyze the provided job data for anomalies in queueing and execution behavior.  Anomalies include jobs with unusually long queue times, unexpected failures,
-  or significant deviations from typical execution times for similar jobs and backends.
+Analyze the provided job data for anomalies like:
+- Unusually long queue times.
+- Unexpected or frequent failures.
+- Significant deviations from typical execution times.
+- Inconsistencies in job status history (e.g., negative queue times).
 
-  Prioritize identifying anomalies that may indicate system performance issues or potential hardware failures.
+Prioritize identifying anomalies that indicate system performance issues or potential hardware failures.
 
-  The job data is provided as a JSON string: {{{jobData}}}
+For each anomaly, provide a detailed but easy-to-understand 'anomalyDescription'. Explain what the anomaly is, why it's a concern, and what it could indicate about the system or the job itself.
 
-  Present your findings as a JSON object with an 'anomalies' array and a 'summary' field. Each anomaly should include the job ID,
-a description of the anomaly, and a severity level ('low', 'medium', or 'high').  The summary should include the total number of anomalies found.
+The job data is provided as a JSON string: {{{jobData}}}
 
-  Example:
-  {
-    "anomalies": [
-      {
-        "jobId": "job123",
-        "anomalyDescription": "Job had unusually long queue time compared to other jobs on the same backend.",
-        "severity": "medium"
-      }
-    ],
-    "summary": "Found 1 anomaly in the provided job data."
-  }`,
+Present your findings as a JSON object with an 'anomalies' array and a 'summary'. The summary should give a high-level overview of the system's health based on the findings.
+
+Example of a good anomaly description:
+"This job spent an unusually long time in the queue (5 hours) compared to other jobs on the 'ibm_brisbane' backend. This could indicate high demand for this specific quantum computer, or it might signal a potential issue with the job scheduler that is preventing jobs from starting promptly."
+`,
 });
 
 const analyzeJobAnomaliesFlow = ai.defineFlow(
