@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useRef, useEffect } from 'react';
@@ -57,7 +58,7 @@ export function AssistantChat() {
         return acc;
       }, [] as { user: string, assistant: string }[]);
       
-      const botResponse = await askDashboardAssistant(input, history);
+      const botResponse = await askDashboardAssistant({ query: input, history });
       const botMessage: Message = { text: botResponse.text, sender: 'bot' };
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
