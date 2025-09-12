@@ -9,12 +9,10 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-const DashboardAssistantInputSchema = z.object({
-  query: z.string().describe('The user\'s question about the dashboard.'),
-});
+const DashboardAssistantInputSchema = z.string().describe('The user\'s question about the dashboard.');
 
 export async function askDashboardAssistant(query: string): Promise<string> {
-  return dashboardAssistantFlow({ query });
+  return dashboardAssistantFlow(query);
 }
 
 const prompt = ai.definePrompt({
@@ -39,7 +37,7 @@ The dashboard has the following features:
 
 Answer the user's question based on this information.
 
-User Query: {{{query}}}
+User Query: {{{input}}}
 `,
 });
 
