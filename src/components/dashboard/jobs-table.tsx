@@ -60,12 +60,12 @@ export function JobsTable({
         </div>
          <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={onViewRunningJobs}>
-              <ListFilter />
+              <Filter />
               <span className="sr-only">Show Running Jobs</span>
           </Button>
           <Link href="/dashboard/jobs" passHref>
             <Button variant="ghost" size="icon">
-                <Filter />
+                <ListFilter />
                 <span className="sr-only">View all jobs</span>
             </Button>
          </Link>
