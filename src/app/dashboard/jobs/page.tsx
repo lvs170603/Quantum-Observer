@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Download, FileText, RefreshCw, Search } from "lucide-react";
 import type { Job, JobStatus } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
@@ -25,6 +25,8 @@ const statusStyles: Record<Job['status'], string> = {
   CANCELLED: "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-400 border-gray-200 dark:border-gray-700/80",
 };
 
+const JOBS_PER_PAGE_OPTIONS = [10, 20, 50];
+
 export default function AllJobsPage() {
   const router = useRouter();
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -34,6 +36,8 @@ export default function AllJobsPage() {
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<JobStatus | "all">("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [jobsPerPage, setJobsPerPage] = useState(JOBS_PER_PAGE_OPTIONS[0]);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
@@ -76,9 +80,27 @@ export default function AllJobsPage() {
     return filtered;
   }, [jobs, searchQuery, statusFilter]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter, jobsPerPage]);
+
+  const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
+  const paginatedJobs = filteredJobs.slice(
+    (currentPage - 1) * jobsPerPage,
+    currentPage * jobsPerPage
+  );
+
   const handleJobSelect = (job: Job) => {
     setSelectedJob(job);
     setIsDrawerOpen(true);
+  };
+  
+  const handleNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  };
+
+  const handlePrevPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1));
   };
 
   return (
@@ -153,15 +175,15 @@ export default function AllJobsPage() {
               </TableHeader>
               <TableBody>
                 {isFetching ? (
-                  Array.from({ length: 10 }).map((_, i) => (
+                  Array.from({ length: jobsPerPage }).map((_, i) => (
                     <TableRow key={i}>
                       <TableCell colSpan={5} className="h-12 text-center">
                         <span className="animate-pulse">Loading...</span>
                       </TableCell>
                     </TableRow>
                   ))
-                ) : (
-                  filteredJobs.map((job) => (
+                ) : paginatedJobs.length > 0 ? (
+                  paginatedJobs.map((job) => (
                     <TableRow key={job.id} onClick={() => handleJobSelect(job)} className="cursor-pointer">
                       <TableCell className="font-mono text-xs truncate max-w-[100px] sm:max-w-xs">{job.id}</TableCell>
                       <TableCell>
@@ -176,10 +198,52 @@ export default function AllJobsPage() {
                       <TableCell>{job.user}</TableCell>
                     </TableRow>
                   ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      No results found.
+                    </TableCell>
+                  </TableRow>
                 )}
               </TableBody>
             </Table>
           </CardContent>
+          <CardFooter className="flex items-center justify-between">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <span>Page {currentPage} of {totalPages > 0 ? totalPages : 1}</span>
+              <div className="flex items-center gap-2">
+                <Label>Rows per page</Label>
+                 <Select value={jobsPerPage.toString()} onValueChange={(value) => setJobsPerPage(Number(value))}>
+                  <SelectTrigger className="w-[70px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {JOBS_PER_PAGE_OPTIONS.map(option => (
+                       <SelectItem key={option} value={option.toString()}>{option}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePrevPage}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages || totalPages === 0}
+              >
+                Next
+              </Button>
+            </div>
+          </CardFooter>
         </Card>
       </main>
        <JobDetailsDrawer
