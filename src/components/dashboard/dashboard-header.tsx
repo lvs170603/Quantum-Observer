@@ -166,32 +166,6 @@ export function DashboardHeader({
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onOpenProfile}>Profile</DropdownMenuItem>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                            Settings
-                        </DropdownMenuItem>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        <DropdownMenuLabel>Settings</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="flex items-center justify-between">
-                                <Label htmlFor="demo-mode-profile" className="font-normal">
-                                    Demo Mode
-                                </Label>
-                                <Switch id="demo-mode-profile" checked={isDemo} onCheckedChange={onToggleDemo} />
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="flex items-center justify-between">
-                                <Label htmlFor="auto-refresh-profile" className="font-normal">
-                                    Auto-refresh
-                                </Label>
-                                <Switch id="auto-refresh-profile" checked={autoRefresh} onCheckedChange={onToggleRefresh} />
-                            </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
