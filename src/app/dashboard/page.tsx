@@ -17,6 +17,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -48,6 +50,7 @@ export default function DashboardPage() {
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [backendFilter, setBackendFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<JobStatus | "all">("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [chartView, setChartView] = useState<ChartView>("all");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -121,9 +124,15 @@ export default function DashboardPage() {
     if (statusFilter !== 'all') {
       newFilteredJobs = newFilteredJobs.filter(job => job.status === statusFilter);
     }
+    if (searchQuery) {
+      newFilteredJobs = newFilteredJobs.filter(job => 
+        job.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        job.user.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
     setFilteredJobs(newFilteredJobs);
     setCurrentPage(1); // Reset to first page when filters change
-  }, [jobs, backendFilter, statusFilter]);
+  }, [jobs, backendFilter, statusFilter, searchQuery]);
 
   const handleJobSelect = (job: Job) => {
     setSelectedJob(job);
@@ -164,6 +173,19 @@ export default function DashboardPage() {
 
   const FilterControls = () => (
     <div className="flex flex-col gap-4 md:flex-row md:items-center">
+       <div className="grid gap-2">
+          <Label>Search</Label>
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search by Job ID or User..."
+              className="w-full pl-8 md:w-[250px] lg:w-[300px]"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
        <div className="grid gap-2">
          <Label>Filter by backend</Label>
         <Select value={backendFilter} onValueChange={setBackendFilter}>
@@ -207,6 +229,7 @@ export default function DashboardPage() {
   const onResetFilters = () => {
     setBackendFilter("all");
     setStatusFilter("all");
+    setSearchQuery("");
   }
 
   return (
