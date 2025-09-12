@@ -189,10 +189,17 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            {chartData.length > 0 ? (
-                <StatusChart data={chartData} view={chartView} />
+            {paginatedJobs.length > 0 ? (
+                <JobsTable
+                    jobs={paginatedJobs}
+                    onJobSelect={handleJobSelect}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onNextPage={handleNextPage}
+                    onPrevPage={handlePrevPage}
+                />
             ) : (
-                <Skeleton className="h-[450px]" />
+                <Skeleton className="h-[500px]" />
             )}
           </div>
           <div className="flex flex-col gap-4">
@@ -209,17 +216,10 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {paginatedJobs.length > 0 ? (
-            <JobsTable
-                jobs={paginatedJobs}
-                onJobSelect={handleJobSelect}
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onNextPage={handleNextPage}
-                onPrevPage={handlePrevPage}
-            />
+        {chartData.length > 0 ? (
+            <StatusChart data={chartData} view={chartView} />
         ) : (
-            <Skeleton className="h-[500px]" />
+            <Skeleton className="h-[450px]" />
         )}
       </main>
       <JobDetailsDrawer
