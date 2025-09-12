@@ -37,7 +37,7 @@ export function DailySummaryChart({ data }: DailySummaryChartProps) {
                 type="category" 
                 tickLine={false} 
                 axisLine={false}
-                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
                 interval={0}
                 angle={-45}
                 textAnchor="end"
