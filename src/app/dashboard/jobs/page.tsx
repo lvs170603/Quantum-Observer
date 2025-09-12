@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { JobDetailsDrawer } from "@/components/dashboard/job-details-drawer";
+import { ExportDialog } from "@/components/dashboard/export-dialog";
 
 const statusStyles: Record<Job['status'], string> = {
   COMPLETED: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-200 dark:border-green-700/80",
@@ -27,6 +28,7 @@ export default function AllJobsPage() {
   const [isFetching, setIsFetching] = useState(true);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
@@ -86,7 +88,7 @@ export default function AllJobsPage() {
                   <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
                   Refresh
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => setIsExportDialogOpen(true)}>
                   <Download className="mr-2 h-4 w-4" />
                   Export
                 </Button>
@@ -109,7 +111,7 @@ export default function AllJobsPage() {
                   Array.from({ length: 10 }).map((_, i) => (
                     <TableRow key={i}>
                       <TableCell colSpan={5} className="h-12 text-center">
-                        Loading...
+                        <span className="animate-pulse">Loading...</span>
                       </TableCell>
                     </TableRow>
                   ))
@@ -139,6 +141,11 @@ export default function AllJobsPage() {
         job={selectedJob}
         isOpen={isDrawerOpen}
         onOpenChange={setIsDrawerOpen}
+      />
+      <ExportDialog
+        jobs={jobs}
+        isOpen={isExportDialogOpen}
+        onOpenChange={setIsExportDialogOpen}
       />
     </div>
   );
