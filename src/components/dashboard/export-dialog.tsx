@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -24,7 +23,7 @@ interface ExportDialogProps {
   onOpenChange: (isOpen: boolean) => void;
 }
 
-type ExportFormat = 'csv' | 'pdf' | 'excel' | 'json';
+type ExportFormat = 'csv' | 'pdf' | 'json';
 
 const downloadFile = (content: string, fileName: string, contentType: string) => {
   const blob = new Blob([content], { type: contentType });
@@ -114,14 +113,6 @@ export function ExportDialog({ jobs, isOpen, onOpenChange }: ExportDialogProps) 
       case 'pdf':
         generatePDF(jobs);
         break;
-      case 'excel':
-        // For this prototype, we'll just show a toast notification for complex formats.
-        console.log(`Exporting ${jobs.length} jobs as ${format.toUpperCase()}`);
-        toast({
-          title: 'Export Initiated',
-          description: `Your download for the job data as a ${format.toUpperCase()} file will begin shortly.`,
-        });
-        break;
     }
 
     onOpenChange(false);
@@ -149,10 +140,6 @@ export function ExportDialog({ jobs, isOpen, onOpenChange }: ExportDialogProps) 
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="pdf" id="pdf" />
               <Label htmlFor="pdf">PDF (Portable Document Format)</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="excel" id="excel" />
-              <Label htmlFor="excel">Excel (XLSX)</Label>
             </div>
           </RadioGroup>
         </div>
