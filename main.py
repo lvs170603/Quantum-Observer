@@ -196,17 +196,12 @@ def list_backends():
             if b.simulator: continue
             try:
                 status_obj = b.status()
-                # Safely get error rate
-                error_rate = 0.01
-                if hasattr(b, "error_rate"):
-                    error_rate = b.error_rate
-
                 out.append({
                     "name": b.name,
                     "status": "active" if status_obj.operational else "inactive",
                     "qubit_count": b.num_qubits,
                     "queue_depth": status_obj.pending_jobs,
-                    "error_rate": error_rate
+                    "error_rate": getattr(b, "error_rate", 0.01)
                 })
             except Exception as e:
                 logger.warning("Could not process backend %s: %s", b.name, e)
