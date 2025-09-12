@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useRouter } from "next/navigation";
 
 const REFRESH_INTERVAL = 15000; // 15 seconds
 type ChartView = "all" | "live_jobs" | "success_rate";
@@ -50,6 +51,7 @@ export default function DashboardPage() {
 
 
   const { toast } = useToast();
+  const router = useRouter();
 
   const fetchData = useCallback(async () => {
     if (isFetching) return;
@@ -127,6 +129,8 @@ export default function DashboardPage() {
   const handleKpiCardClick = (kpiKey: string) => {
     if (kpiKey === 'live_jobs' || kpiKey === 'success_rate') {
       setChartView(prev => (prev === kpiKey ? 'all' : kpiKey as ChartView));
+    } else if (kpiKey === 'open_sessions') {
+      router.push('/dashboard/sessions');
     }
   };
 

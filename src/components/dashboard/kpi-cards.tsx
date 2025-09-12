@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Activity, Clock, CheckCircle, Users } from "lucide-react";
 import type { Metrics } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 
 interface KpiCardsProps extends Metrics {
@@ -43,11 +44,21 @@ const kpiConfig = [
     icon: Users,
     description: "Active user sessions",
     format: (value: number) => value.toString(),
-    clickable: false,
+    clickable: true,
   },
 ];
 
 export function KpiCards({ onCardClick, activeView, ...metrics }: KpiCardsProps) {
+  const router = useRouter();
+
+  const handleCardClick = (kpiKey: string) => {
+    if (kpiKey === 'open_sessions') {
+      router.push('/dashboard/sessions');
+    } else {
+      onCardClick(kpiKey);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {kpiConfig.map((kpi) => {
@@ -79,9 +90,9 @@ export function KpiCards({ onCardClick, activeView, ...metrics }: KpiCardsProps)
           >
             {kpi.clickable ? (
               <button
-                onClick={() => onCardClick(kpi.key)}
+                onClick={() => handleCardClick(kpi.key)}
                 className="w-full text-left p-0 focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
-                aria-pressed={isActive}
+                aria-pressed={isActive && kpi.key !== 'open_sessions'}
               >
                 {cardInnerContent}
               </button>
