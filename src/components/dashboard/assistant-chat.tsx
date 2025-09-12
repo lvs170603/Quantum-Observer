@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bot, User, CornerDownLeft, Loader2 } from 'lucide-react';
-import { askDashboardAssistant } from '@/ai/flows/dashboard-assistant';
+import { askDashboardAssistant, type DashboardAssistantInput } from '@/ai/flows/dashboard-assistant';
 import { useToast } from '@/hooks/use-toast';
 
 interface Message {
@@ -29,15 +29,12 @@ export function AssistantChat() {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const scrollViewportRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({
-        top: scrollAreaRef.current.scrollHeight,
-        behavior: 'smooth',
-      });
+    if (scrollViewportRef.current) {
+      scrollViewportRef.current.scrollTop = scrollViewportRef.current.scrollHeight;
     }
   }, [messages]);
 
@@ -52,14 +49,19 @@ export function AssistantChat() {
     setIsLoading(true);
 
     try {
-      const history = newMessages.reduce((acc, msg, i) => {
-        if (msg.sender === 'user' && newMessages[i-1]?.sender === 'bot') {
-            acc.push({ user: msg.text, assistant: newMessages[i-1].text });
+      const history = newMessages.slice(0, -1).reduce((acc, msg, i) => {
+        if (msg.sender === 'user' && newMessages[i + 1]?.sender === 'bot') {
+          acc.push({ user: msg.text, assistant: newMessages[i + 1].text });
         }
         return acc;
-      }, [] as { user: string, assistant: string }[]);
+      }, [] as { user: string; assistant: string }[]);
       
-      const botResponse = await askDashboardAssistant({ query: input, history });
+      const payload: DashboardAssistantInput = { query: input };
+      if (history.length > 0) {
+        payload.history = history;
+      }
+
+      const botResponse = await askDashboardAssistant(payload);
       const botMessage: Message = { text: botResponse.text, sender: 'bot' };
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
@@ -94,7 +96,7 @@ export function AssistantChat() {
             <DialogDescription>Ask me anything about this dashboard.</DialogDescription>
           </DialogHeader>
           <div className="flex flex-col h-[60vh]">
-            <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+            <ScrollArea className="flex-1 p-4" viewportRef={scrollViewportRef}>
               <div className="space-y-4">
                 {messages.map((message, index) => (
                   <div key={index} className={`flex items-start gap-2 ${message.sender === 'user' ? 'justify-end' : ''}`}>
