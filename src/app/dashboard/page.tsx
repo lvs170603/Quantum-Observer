@@ -76,6 +76,15 @@ export default function DashboardPage() {
       setDailySummary(data.dailySummary);
       setLastUpdated(new Date());
 
+      if (data.note) {
+        toast({
+          variant: "destructive",
+          title: "API Connection Error",
+          description: data.note,
+        });
+        // Fallback to demo data if the API fails
+        if (!isDemo) setIsDemo(true);
+      }
     } catch (error) {
       console.error("Failed to fetch data:", error);
       toast({
