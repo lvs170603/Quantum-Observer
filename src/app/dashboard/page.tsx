@@ -14,6 +14,7 @@ import { JobDetailsDrawer } from "@/components/dashboard/job-details-drawer";
 import { AnomalyDialog } from "@/components/dashboard/anomaly-dialog";
 import { ProfileSheet } from "@/components/dashboard/profile-sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AssistantChat } from "@/components/dashboard/assistant-chat";
 
 type ChartView = "all" | "live_jobs" | "success_rate";
 
@@ -235,6 +236,7 @@ export default function DashboardPage() {
         isOpen={isProfileSheetOpen}
         onOpenChange={setIsProfileSheetOpen}
       />
+      <AssistantChat />
     </div>
   );
 }
