@@ -5,6 +5,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -19,10 +20,15 @@ import {
 import { Badge } from "@/components/ui/badge"
 import type { Job, JobStatus } from "@/lib/types"
 import { formatDistanceToNow } from "date-fns"
+import { Button } from "../ui/button"
 
 interface JobsTableProps {
   jobs: Job[];
   onJobSelect: (job: Job) => void;
+  currentPage: number;
+  totalPages: number;
+  onNextPage: () => void;
+  onPrevPage: () => void;
 }
 
 const statusStyles: Record<JobStatus, string> = {
@@ -33,7 +39,14 @@ const statusStyles: Record<JobStatus, string> = {
   CANCELLED: "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-400 border-gray-200 dark:border-gray-700/80",
 };
 
-export function JobsTable({ jobs, onJobSelect }: JobsTableProps) {
+export function JobsTable({
+  jobs,
+  onJobSelect,
+  currentPage,
+  totalPages,
+  onNextPage,
+  onPrevPage,
+}: JobsTableProps) {
   return (
     <Card>
       <CardHeader>
@@ -41,9 +54,9 @@ export function JobsTable({ jobs, onJobSelect }: JobsTableProps) {
         <CardDescription>A list of recent and ongoing quantum jobs.</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="relative max-h-[600px] overflow-auto">
+        <div className="relative">
           <Table>
-            <TableHeader className="sticky top-0 bg-card">
+            <TableHeader>
               <TableRow>
                 <TableHead>Job ID</TableHead>
                 <TableHead>Status</TableHead>
@@ -72,6 +85,29 @@ export function JobsTable({ jobs, onJobSelect }: JobsTableProps) {
           </Table>
         </div>
       </CardContent>
+       <CardFooter className="flex items-center justify-between">
+        <div className="text-xs text-muted-foreground">
+          Showing page {currentPage} of {totalPages}
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onPrevPage}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onNextPage}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
+      </CardFooter>
     </Card>
   )
 }

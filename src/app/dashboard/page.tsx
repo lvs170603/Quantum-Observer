@@ -28,6 +28,7 @@ import { useRouter } from "next/navigation";
 
 const REFRESH_INTERVAL = 15000; // 15 seconds
 type ChartView = "all" | "live_jobs" | "success_rate";
+const JOBS_PER_PAGE = 10;
 
 export default function DashboardPage() {
   const [isDemo, setIsDemo] = useState(true);
@@ -48,6 +49,7 @@ export default function DashboardPage() {
   const [backendFilter, setBackendFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<JobStatus | "all">("all");
   const [chartView, setChartView] = useState<ChartView>("all");
+  const [currentPage, setCurrentPage] = useState(1);
 
 
   const { toast } = useToast();
@@ -111,6 +113,7 @@ export default function DashboardPage() {
       newFilteredJobs = newFilteredJobs.filter(job => job.status === statusFilter);
     }
     setFilteredJobs(newFilteredJobs);
+    setCurrentPage(1); // Reset to first page when filters change
   }, [jobs, backendFilter, statusFilter]);
 
   const handleJobSelect = (job: Job) => {
@@ -136,6 +139,20 @@ export default function DashboardPage() {
 
   const backendNames = useMemo(() => backends.map(b => b.name), [backends]);
   
+  const totalPages = Math.ceil(filteredJobs.length / JOBS_PER_PAGE);
+  const jobsForCurrentPage = filteredJobs.slice(
+    (currentPage - 1) * JOBS_PER_PAGE,
+    currentPage * JOBS_PER_PAGE
+  );
+
+  const handleNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  };
+
+  const handlePrevPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1));
+  };
+
   const FilterControls = () => (
     <div className="flex flex-col gap-4 md:flex-row md:items-center">
        <div className="grid gap-2">
@@ -206,7 +223,14 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-5 lg:gap-8">
           <div className="lg:col-span-3">
-            <JobsTable jobs={filteredJobs} onJobSelect={handleJobSelect} />
+            <JobsTable
+              jobs={jobsForCurrentPage}
+              onJobSelect={handleJobSelect}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onNextPage={handleNextPage}
+              onPrevPage={handlePrevPage}
+            />
           </div>
           <div className="lg:col-span-2 space-y-4">
             {dailySummary && <DailySummaryChart data={dailySummary} />}
