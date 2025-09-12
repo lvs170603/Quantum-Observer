@@ -4,8 +4,6 @@ import type { Job, Backend, Metrics, ChartData, JobStatus, DailyJobSummary } fro
 import { subMinutes, subHours, formatISO, parseISO, isToday, startOfDay } from "date-fns";
 import { generateCircuitDiagram } from '@/ai/flows/generate-circuit-diagram';
 
-const API_BASE_URL = process.env.BACKEND_API_URL || "http://localhost:8000";
-
 // ✅ Simple in-memory cache for mock data (optional)
 let mockCache: { data: any; timestamp: number } | null = null;
 
@@ -20,10 +18,10 @@ function calculateDailySummary(jobs: Job[]): DailyJobSummary {
     return acc;
   }, {} as Record<string, number>);
 
-  const chartData = Object.entries(completedByBackend).map(([name, value]) => ({
+  const chartData = Object.entries(completedByBackend).map(([name, value], index) => ({
     name,
     value,
-    fill: `hsl(var(--chart-${(Object.keys(completedByBackend).indexOf(name) % 5) + 1}))`,
+    fill: `hsl(var(--chart-${(index % 5) + 1}))`,
   }));
 
   return {
@@ -44,7 +42,7 @@ async function generateMockData() {
     { name: "ibm_brisbane", status: "active", qubit_count: 127, queue_depth: Math.floor(Math.random() * 10), error_rate: 0.012 },
     { name: "ibm_kyoto", status: "active", qubit_count: 127, queue_depth: Math.floor(Math.random() * 10), error_rate: 0.015 },
     { name: "ibm_osaka", status: "active", qubit_count: 127, queue_depth: Math.floor(Math.random() * 10), error_rate: 0.011 },
-    { name: "ibmq_kolkata", status: Math.random() > 0.8 ? "maintenance" : "active", qubit_count: 27, queue_depth: 0, error_rate: 0.025 },
+    { name: "ibmq_kolkata", status: Math.random() > 0.8 ? "inactive" : "active", qubit_count: 27, queue_depth: 0, error_rate: 0.025 },
     { name: "ibmq_mumbai", status: "active", qubit_count: 27, queue_depth: Math.floor(Math.random() * 5), error_rate: 0.021 },
     { name: "ibmq_auckland", status: Math.random() > 0.9 ? "inactive" : "active", qubit_count: 27, queue_depth: 0, error_rate: 0.033 },
   ];
@@ -54,8 +52,8 @@ async function generateMockData() {
 
   // ✅ Generate circuit diagrams (limited to 10)
   const circuitImages = await Promise.all(
-    Array.from({ length: 10 }, () =>
-      generateCircuitDiagram({ prompt: `A simple quantum circuit diagram with random gates.` })
+    Array.from({ length: 10 }, (_,i) =>
+      generateCircuitDiagram({ prompt: `A simple quantum circuit diagram with random gates and seed ${i}.` })
     )
   );
 
@@ -85,7 +83,7 @@ async function generateMockData() {
       logs: status === 'ERROR' ? `Error: Qubit calibration failed.` : `Job executed successfully.`,
       results: status === 'COMPLETED' ? { "001": 102, "110": 34, "101": 410 } : {},
       status_history,
-      circuit_image_url: circuitImages[i % circuitImages.length],
+      circuit_image_url: circuitImages[i % circuitImages.length].url,
     };
   });
 
@@ -97,7 +95,10 @@ async function generateMockData() {
   const avgWaitTime = jobsWithRunning.reduce((acc, j) => {
     const runningEntry = j.status_history.find(s => s.status === 'RUNNING');
     if (!runningEntry) return acc;
-    return acc + (new Date(runningEntry.timestamp).getTime() - new Date(j.submitted).getTime());
+    const submittedTime = new Date(j.submitted).getTime();
+    const runningTime = new Date(runningEntry.timestamp).getTime();
+    if (isNaN(submittedTime) || isNaN(runningTime)) return acc;
+    return acc + (runningTime - submittedTime);
   }, 0) / (1000 * jobsWithRunning.length || 1);
 
   const mockMetrics: Metrics = {
@@ -127,100 +128,14 @@ async function generateMockData() {
   return { ...data, source: "mock" };
 }
 
-async function getRealData() {
-  const [backendsResponse, jobsResponse] = await Promise.all([
-    fetch(`${API_BASE_URL}/api/backends`),
-    fetch(`${API_BASE_URL}/api/jobs?limit=50`)
-  ]);
-
-  if (!backendsResponse.ok) {
-    throw new Error(`Backend API Error: ${backendsResponse.status} ${backendsResponse.statusText}`);
-  }
-   if (!jobsResponse.ok) {
-    throw new Error(`Jobs API Error: ${jobsResponse.status} ${jobsResponse.statusText}`);
-  }
-
-  const apiBackends = await backendsResponse.json();
-  const apiJobs = await jobsResponse.json();
-  
-  const backends: Backend[] = apiBackends.map((b: any) => ({
-    name: b.name,
-    status: b.status.toLowerCase() as "active" | "inactive" | "maintenance",
-    qubit_count: b.qubit_count,
-    queue_depth: b.queue_depth,
-    error_rate: b.error_rate || 0.0,
-  }));
-
-  const jobs: Job[] = apiJobs.map((j: any) => ({
-    id: j.id,
-    status: j.status.toUpperCase() as JobStatus,
-    backend: j.backend,
-    submitted: j.submitted,
-    elapsed_time: j.elapsed_time,
-    user: j.user,
-    qpu_seconds: j.qpu_seconds || 0,
-    logs: j.logs,
-    results: j.results || {},
-    status_history: j.status_history,
-    circuit_image_url: "https://picsum.photos/seed/circuit/800/200", // placeholder
-  }));
-
-  const liveJobs = jobs.filter(j => j.status === 'RUNNING' || j.status === 'QUEUED').length;
-  const successfulJobs = jobs.filter(j => j.status === 'COMPLETED').length;
-  const totalCompletedOrError = successfulJobs + jobs.filter(j => j.status === 'ERROR').length;
-
-  const jobsWithRunning = jobs.filter(j => j.status_history.some(s => s.status === 'RUNNING'));
-  const avgWaitTime = jobsWithRunning.reduce((acc, j) => {
-    const runningEntry = j.status_history.find(s => s.status === 'RUNNING');
-    if (!runningEntry) return acc;
-    return acc + (new Date(runningEntry.timestamp).getTime() - new Date(j.submitted).getTime());
-  }, 0) / (1000 * jobsWithRunning.length || 1);
-
-  const metrics: Metrics = {
-    total_jobs: jobs.length,
-    live_jobs: liveJobs,
-    avg_wait_time: avgWaitTime,
-    success_rate: totalCompletedOrError > 0 ? (successfulJobs / totalCompletedOrError) * 100 : 100,
-    open_sessions: 1, // This is a mock value as session count is not available from the API
-  };
-  
-  const now = new Date();
-  const chartData: ChartData[] = Array.from({ length: 12 }, (_, i) => {
-    const time = subHours(now, 11 - i);
-    const timePlusHour = subHours(now, 10 - i);
-    const jobsInWindow = jobs.filter(j => {
-      const submittedDate = parseISO(j.submitted);
-      return submittedDate >= time && submittedDate < timePlusHour;
-    });
-
-    return {
-      time: formatISO(time).substring(11, 16),
-      COMPLETED: jobsInWindow.filter(j => j.status === 'COMPLETED').length,
-      RUNNING: jobsInWindow.filter(j => j.status === 'RUNNING').length,
-      QUEUED: jobsInWindow.filter(j => j.status === 'QUEUED').length,
-      ERROR: jobsInWindow.filter(j => j.status === 'ERROR').length,
-    };
-  });
-
-  const dailySummary = calculateDailySummary(jobs);
-
-  return { jobs, backends, metrics, chartData, dailySummary, source: "real" };
-}
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const isDemo = searchParams.get('demo') === 'true';
 
   if (!isDemo) {
-    try {
-      console.log("✅ Fetching real data from Python backend...");
-      const realData = await getRealData();
-      return NextResponse.json(realData);
-    } catch (error) {
-      console.error("❌ Error fetching real data:", error);
-      const mockData = await generateMockData();
-      return NextResponse.json({ ...mockData, note: "Real API failed, fallback to mock data." });
-    }
+    // This block should ideally not be hit if the frontend calls the right APIs directly.
+    // However, we leave it as a safeguard.
+    return NextResponse.json({ error: "This endpoint is for demo data only. Please call /api/jobs and /api/backends directly." }, { status: 400 });
   }
 
   console.warn("⚠ Using mock data (demo mode).");

@@ -15,10 +15,35 @@ import { AnomalyDialog } from "@/components/dashboard/anomaly-dialog";
 import { ProfileSheet } from "@/components/dashboard/profile-sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AssistantChat } from "@/components/dashboard/assistant-chat";
+import { subHours, formatISO, parseISO, isToday, startOfDay } from "date-fns";
 
 type ChartView = "all" | "live_jobs" | "success_rate";
 
 const JOBS_PER_PAGE = 10;
+
+function calculateDailySummary(jobs: Job[]): DailyJobSummary {
+  const today = new Date();
+  const todaysCompletedJobs = jobs.filter(job => 
+    job.status === 'COMPLETED' && isToday(parseISO(job.submitted))
+  );
+
+  const completedByBackend = todaysCompletedJobs.reduce((acc, job) => {
+    acc[job.backend] = (acc[job.backend] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const chartData = Object.entries(completedByBackend).map(([name, value], index) => ({
+    name,
+    value,
+    fill: `hsl(var(--chart-${(index % 5) + 1}))`,
+  }));
+
+  return {
+    date: formatISO(startOfDay(today)),
+    totalCompleted: todaysCompletedJobs.length,
+    completedByBackend: chartData,
+  };
+}
 
 export default function DashboardPage() {
   const [isDemo, setIsDemo] = useState(true);
@@ -46,16 +71,106 @@ export default function DashboardPage() {
 
   const { toast } = useToast();
 
-  const fetchData = useCallback(async () => {
-    if (isFetching && lastUpdated) return; // Prevent refetch if already fetching, unless it's the initial load
-    setIsFetching(true);
-    const url = `/api/mock?demo=${isDemo}`;
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
+  const fetchMockData = useCallback(async () => {
+    const url = `/api/mock?demo=true`;
+    const response = await fetch(url);
+    if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
+    }
+    return response.json();
+  }, []);
+
+  const fetchRealData = useCallback(async () => {
+    console.log("✅ Fetching real data from Python backend...");
+    const [backendsResponse, jobsResponse] = await Promise.all([
+        fetch(`/api/backends`),
+        fetch(`/api/jobs?limit=50`)
+    ]);
+
+    if (!backendsResponse.ok) {
+        throw new Error(`Backend API Error: ${backendsResponse.status} ${backendsResponse.statusText}`);
+    }
+    if (!jobsResponse.ok) {
+        throw new Error(`Jobs API Error: ${jobsResponse.status} ${jobsResponse.statusText}`);
+    }
+
+    const apiBackends = await backendsResponse.json();
+    const apiJobs = await jobsResponse.json();
+    
+    const backends: Backend[] = apiBackends.map((b: any) => ({
+        name: b.name,
+        status: b.status.toLowerCase() as "active" | "inactive",
+        qubit_count: b.qubit_count,
+        queue_depth: b.queue_depth,
+        error_rate: b.error_rate || 0.0,
+    }));
+
+    const jobs: Job[] = apiJobs.map((j: any) => ({
+        id: j.id,
+        status: j.status.toUpperCase() as JobStatus,
+        backend: j.backend,
+        submitted: j.submitted,
+        elapsed_time: j.elapsed_time,
+        user: j.user,
+        qpu_seconds: j.qpu_seconds || 0,
+        logs: j.logs,
+        results: j.results || {},
+        status_history: j.status_history,
+        circuit_image_url: "https://picsum.photos/seed/circuit/800/200", // placeholder
+    }));
+
+    const liveJobs = jobs.filter(j => j.status === 'RUNNING' || j.status === 'QUEUED').length;
+    const successfulJobs = jobs.filter(j => j.status === 'COMPLETED').length;
+    const totalCompletedOrError = successfulJobs + jobs.filter(j => j.status === 'ERROR').length;
+
+    const jobsWithRunning = jobs.filter(j => j.status_history.some(s => s.status === 'RUNNING'));
+    const avgWaitTime = jobsWithRunning.reduce((acc, j) => {
+        const runningEntry = j.status_history.find(s => s.status === 'RUNNING');
+        if (!runningEntry) return acc;
+        const submittedTime = new Date(j.submitted).getTime();
+        const runningTime = new Date(runningEntry.timestamp).getTime();
+        if (isNaN(submittedTime) || isNaN(runningTime)) return acc;
+        return acc + (runningTime - submittedTime);
+    }, 0) / (1000 * jobsWithRunning.length || 1);
+
+    const metrics: Metrics = {
+        total_jobs: jobs.length,
+        live_jobs: liveJobs,
+        avg_wait_time: avgWaitTime,
+        success_rate: totalCompletedOrError > 0 ? (successfulJobs / totalCompletedOrError) * 100 : 100,
+        open_sessions: 1, 
+    };
+    
+    const now = new Date();
+    const chartData: ChartData[] = Array.from({ length: 12 }, (_, i) => {
+        const time = subHours(now, 11 - i);
+        const timePlusHour = subHours(now, 10 - i);
+        const jobsInWindow = jobs.filter(j => {
+            const submittedDate = parseISO(j.submitted);
+            return submittedDate >= time && submittedDate < timePlusHour;
+        });
+
+        return {
+            time: formatISO(time).substring(11, 16),
+            COMPLETED: jobsInWindow.filter(j => j.status === 'COMPLETED').length,
+            RUNNING: jobsInWindow.filter(j => j.status === 'RUNNING').length,
+            QUEUED: jobsInWindow.filter(j => j.status === 'QUEUED').length,
+            ERROR: jobsInWindow.filter(j => j.status === 'ERROR').length,
+        };
+    });
+
+    const dailySummary = calculateDailySummary(jobs);
+
+    return { jobs, backends, metrics, chartData, dailySummary, source: "real" };
+  }, []);
+
+  const fetchData = useCallback(async () => {
+    if (isFetching && lastUpdated) return; 
+    setIsFetching(true);
+    
+    try {
+      const data = isDemo ? await fetchMockData() : await fetchRealData();
+      
       setJobs(data.jobs);
       setBackends(data.backends);
       setMetrics(data.metrics);
@@ -76,54 +191,33 @@ export default function DashboardPage() {
       console.error("Failed to fetch data:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Could not fetch data from the server.",
+        title: "Error Fetching Data",
+        description: error instanceof Error ? error.message : "Could not fetch data from the server.",
       });
+      // If real data fails, fallback to mock data to prevent a blank screen
+      if (!isDemo) {
+        toast({
+            title: "Fallback to Demo Mode",
+            description: "Could not connect to the live backend. Displaying demo data instead.",
+        });
+        const mockData = await fetchMockData();
+        setJobs(mockData.jobs);
+        setBackends(mockData.backends);
+        setMetrics(mockData.metrics);
+        setChartData(mockData.chartData);
+        setDailySummary(mockData.dailySummary);
+        setSource(mockData.source);
+        setLastUpdated(new Date());
+      }
     } finally {
       setIsFetching(false);
     }
-  }, [isDemo, toast, isFetching, lastUpdated]);
+  }, [isDemo, toast, isFetching, lastUpdated, fetchMockData, fetchRealData]);
 
   useEffect(() => {
-    // Initial fetch, ignoring the isFetching check
-    (async () => {
-        setIsFetching(true);
-        const url = `/api/mock?demo=${isDemo}`;
-        try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setJobs(data.jobs);
-        setBackends(data.backends);
-        setMetrics(data.metrics);
-        setChartData(data.chartData);
-        setDailySummary(data.dailySummary);
-        setSource(data.source);
-        setLastUpdated(new Date());
-
-        if (data.note) {
-            toast({
-                variant: "destructive",
-                title: "API Connection Failed",
-                description: data.note,
-            });
-        }
-
-        } catch (error) {
-        console.error("Failed to fetch data:", error);
-        toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Could not fetch data from the server.",
-        });
-        } finally {
-        setIsFetching(false);
-        }
-    })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDemo, toast]);
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDemo]);
 
 
   useEffect(() => {

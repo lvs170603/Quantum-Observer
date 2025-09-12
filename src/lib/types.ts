@@ -12,7 +12,7 @@ export interface Job {
   logs: string;
   results: Record<string, any>;
   status_history: { status: JobStatus; timestamp: string }[];
-  circuit_image_url?: string; // This remains a frontend-only concept from mock data
+  circuit_image_url?: string; 
 }
 
 export interface Backend {
