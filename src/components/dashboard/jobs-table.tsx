@@ -57,12 +57,12 @@ export function JobsTable({
           <CardDescription>A list of recent and ongoing quantum jobs.</CardDescription>
         </div>
          <div className="flex items-center gap-2">
-          <Link href="/dashboard/jobs" passHref>
-            <Button variant="ghost" size="icon">
+          <Button asChild variant="ghost" size="icon">
+            <Link href="/dashboard/jobs">
                 <ListFilter />
                 <span className="sr-only">View all jobs</span>
-            </Button>
-         </Link>
+            </Link>
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
