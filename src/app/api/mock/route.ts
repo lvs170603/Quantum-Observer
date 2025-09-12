@@ -102,6 +102,7 @@ async function generateMockData() {
   }, 0) / (1000 * jobsWithRunning.length || 1);
 
   const mockMetrics: Metrics = {
+    total_jobs: mockJobs.length,
     live_jobs: liveJobs,
     avg_wait_time: avgWaitTime,
     success_rate: totalCompletedOrError > 0 ? (successfulJobs / totalCompletedOrError) * 100 : 0,
@@ -189,6 +190,7 @@ async function getRealData(apiKey: string) {
   }, 0) / (1000 * jobsWithRunning.length || 1);
 
   const metrics: Metrics = {
+    total_jobs: jobs.length,
     live_jobs: liveJobs,
     avg_wait_time: avgWaitTime,
     success_rate: totalCompletedOrError > 0 ? (successfulJobs / totalCompletedOrError) * 100 : 100,

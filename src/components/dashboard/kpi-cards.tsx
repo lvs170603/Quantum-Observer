@@ -2,7 +2,7 @@
 "use client";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Activity, Clock, CheckCircle, Users } from "lucide-react";
+import { Activity, Clock, CheckCircle, Users, Layers } from "lucide-react";
 import type { Metrics } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
@@ -14,6 +14,14 @@ interface KpiCardsProps extends Metrics {
 }
 
 const kpiConfig = [
+   {
+    title: "Total Jobs",
+    key: "total_jobs" as const,
+    icon: Layers,
+    description: "Total jobs processed in the period",
+    format: (value: number) => value.toString(),
+    clickable: false,
+  },
   {
     title: "Live Jobs",
     key: "live_jobs" as const,
@@ -59,9 +67,12 @@ export function KpiCards({ onCardClick, activeView, ...metrics }: KpiCardsProps)
     }
   };
 
+  const kpiItems = kpiConfig.filter(kpi => metrics[kpi.key] !== undefined);
+
+
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {kpiConfig.map((kpi) => {
+    <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-${kpiItems.length}`}>
+      {kpiItems.map((kpi) => {
         const Icon = kpi.icon;
         const value = metrics[kpi.key];
         const isActive = activeView === kpi.key;

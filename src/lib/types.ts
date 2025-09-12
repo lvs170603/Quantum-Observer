@@ -24,6 +24,7 @@ export interface Backend {
 }
 
 export interface Metrics {
+  total_jobs: number;
   live_jobs: number;
   avg_wait_time: number; // in seconds
   success_rate: number; // as a percentage
