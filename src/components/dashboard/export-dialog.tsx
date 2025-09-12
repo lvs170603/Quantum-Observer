@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { Job } from '@/lib/types';
 import { DownloadCloud } from 'lucide-react';
+import jsPDF from 'jspdf';
 
 interface ExportDialogProps {
   jobs: Job[];
@@ -67,6 +68,35 @@ const convertToCSV = (jobs: Job[]) => {
   return csvRows.join('\n');
 };
 
+const generatePDF = (jobs: Job[]) => {
+  const doc = new jsPDF();
+  let y = 15;
+  doc.setFontSize(18);
+  doc.text('Quantum Job Report', 14, y);
+  y += 10;
+  
+  jobs.forEach((job, index) => {
+    if (y > 280) { // Add new page if content overflows
+      doc.addPage();
+      y = 15;
+    }
+    doc.setFontSize(12);
+    doc.text(`Job ${index + 1}`, 14, y);
+    y += 7;
+    doc.setFontSize(10);
+    doc.text(`ID: ${job.id}`, 16, y);
+    y += 5;
+    doc.text(`Status: ${job.status}`, 16, y);
+    y += 5;
+    doc.text(`Backend: ${job.backend}`, 16, y);
+    y += 5;
+    doc.text(`Submitted: ${job.submitted}`, 16, y);
+    y += 10;
+  });
+
+  doc.save(`quantum_jobs_${new Date().toISOString()}.pdf`);
+};
+
 export function ExportDialog({ jobs, isOpen, onOpenChange }: ExportDialogProps) {
   const [format, setFormat] = useState<ExportFormat>('csv');
   const { toast } = useToast();
@@ -82,6 +112,8 @@ export function ExportDialog({ jobs, isOpen, onOpenChange }: ExportDialogProps) 
         downloadFile(jsonData, `quantum_jobs_${new Date().toISOString()}.json`, 'application/json;charset=utf-8;');
         break;
       case 'pdf':
+        generatePDF(jobs);
+        break;
       case 'excel':
         // For this prototype, we'll just show a toast notification for complex formats.
         console.log(`Exporting ${jobs.length} jobs as ${format.toUpperCase()}`);
