@@ -8,7 +8,6 @@ import { ThemeToggle } from "@/components/dashboard/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuGroup } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -40,6 +39,7 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   const router = useRouter();
   const [hasMounted, setHasMounted] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
     setHasMounted(true);
@@ -117,21 +117,12 @@ export function DashboardHeader({
           </Tooltip>
         </TooltipProvider>
 
-        <TooltipProvider>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" onClick={onAnalyze}>
-                        <BrainCircuit className="h-4 w-4" />
-                        <span className="sr-only">Analyze Anomalies</span>
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p>Analyze Anomalies</p>
-                </TooltipContent>
-            </Tooltip>
-        </TooltipProvider>
+        <Button variant="outline" size="sm" onClick={onAnalyze}>
+            <BrainCircuit className="mr-2 h-4 w-4" />
+            Analyze Anomalies
+        </Button>
 
-        <DropdownMenu>
+        <DropdownMenu open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon">
                     <SlidersHorizontal className="h-4 w-4" />
@@ -175,6 +166,7 @@ export function DashboardHeader({
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onOpenProfile}>Profile</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>Settings</DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
