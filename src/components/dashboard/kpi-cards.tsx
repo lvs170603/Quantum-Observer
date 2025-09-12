@@ -38,6 +38,7 @@ const kpiConfig = [
     description: "Average time jobs spend in queue",
     format: (value: number) => `${Math.round(value / 60)}m ${Math.round(value % 60)}s`,
     clickable: false,
+    hoverable: true,
   },
   {
     title: "Success Rate",
