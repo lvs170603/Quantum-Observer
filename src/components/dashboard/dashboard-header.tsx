@@ -106,9 +106,6 @@ export function DashboardHeader({
             </Label>
             <Switch id="auto-refresh" checked={autoRefresh} onCheckedChange={onToggleRefresh} />
           </div>
-          <div className="text-sm text-muted-foreground">
-            {lastUpdated && `Updated ${formatDistanceToNow(lastUpdated, { addSuffix: true })}`}
-          </div>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
