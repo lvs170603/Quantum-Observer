@@ -52,7 +52,7 @@ export function AssistantChat() {
 
     try {
       const botResponse = await askDashboardAssistant(input);
-      const botMessage: Message = { text: botResponse, sender: 'bot' };
+      const botMessage: Message = { text: botResponse.text, sender: 'bot' };
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
       console.error('AI assistant failed:', error);
