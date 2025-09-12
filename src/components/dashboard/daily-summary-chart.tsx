@@ -31,7 +31,7 @@ export function DailySummaryChart({ data }: DailySummaryChartProps) {
           className="h-[250px] w-full"
         >
           <ResponsiveContainer>
-            <BarChart data={chartData} margin={{left: -20, right: 20, bottom: 20}}>
+            <BarChart data={chartData} margin={{left: -20, right: 20, bottom: 40}}>
               <XAxis 
                 dataKey="name" 
                 type="category" 
