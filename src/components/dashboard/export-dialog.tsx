@@ -25,19 +25,60 @@ interface ExportDialogProps {
 
 type ExportFormat = 'csv' | 'pdf' | 'excel' | 'json';
 
+const downloadFile = (content: string, fileName: string, contentType: string) => {
+  const blob = new Blob([content], { type: contentType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+const convertToCSV = (jobs: Job[]) => {
+  if (jobs.length === 0) return '';
+  const headers = ['id', 'status', 'backend', 'submitted', 'elapsed_time', 'user', 'qpu_seconds'];
+  const csvRows = [headers.join(',')];
+  jobs.forEach(job => {
+    const values = headers.map(header => {
+      const value = job[header as keyof Job];
+      // Handle values that might contain commas
+      if (typeof value === 'string' && value.includes(',')) {
+        return `"${value}"`;
+      }
+      return value;
+    });
+    csvRows.push(values.join(','));
+  });
+  return csvRows.join('\n');
+};
+
 export function ExportDialog({ jobs, isOpen, onOpenChange }: ExportDialogProps) {
   const [format, setFormat] = useState<ExportFormat>('csv');
   const { toast } = useToast();
 
   const handleExport = () => {
-    // In a real application, this would trigger a file download.
-    // For this prototype, we'll just show a toast notification.
-    console.log(`Exporting ${jobs.length} jobs as ${format.toUpperCase()}`);
-
-    toast({
-      title: 'Export Initiated',
-      description: `Your download for the job data as a ${format.toUpperCase()} file will begin shortly.`,
-    });
+    switch (format) {
+      case 'csv':
+        const csvData = convertToCSV(jobs);
+        downloadFile(csvData, `quantum_jobs_${new Date().toISOString()}.csv`, 'text/csv;charset=utf-8;');
+        break;
+      case 'json':
+        const jsonData = JSON.stringify(jobs, null, 2);
+        downloadFile(jsonData, `quantum_jobs_${new Date().toISOString()}.json`, 'application/json;charset=utf-8;');
+        break;
+      case 'pdf':
+      case 'excel':
+        // For this prototype, we'll just show a toast notification for complex formats.
+        console.log(`Exporting ${jobs.length} jobs as ${format.toUpperCase()}`);
+        toast({
+          title: 'Export Initiated',
+          description: `Your download for the job data as a ${format.toUpperCase()} file will begin shortly.`,
+        });
+        break;
+    }
 
     onOpenChange(false);
   };
@@ -52,7 +93,7 @@ export function ExportDialog({ jobs, isOpen, onOpenChange }: ExportDialogProps) 
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          <RadioGroup defaultValue="csv" onValueChange={(value: ExportFormat) => setFormat(value)}>
+          <RadioGroup defaultValue="csv" onValueChange={(value: ExportFormat) => setFormat(value)} className="space-y-2">
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="csv" id="csv" />
               <Label htmlFor="csv">CSV (Comma-Separated Values)</Label>
