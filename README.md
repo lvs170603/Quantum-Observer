@@ -15,6 +15,7 @@ Quantum Observer is a real-time monitoring dashboard for quantum computing jobs 
 ## Tech Stack
 
 - **Framework:** [Next.js](https://nextjs.org/) (App Router)
+- **Backend:** [Python](https://www.python.org/) with [FastAPI](https://fastapi.tiangolo.com/)
 - **AI Integration:** [Firebase Genkit](https://firebase.google.com/docs/genkit)
 - **UI:** [React](https://react.dev/) with [TypeScript](https://www.typescriptlang.org/)
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/)
@@ -29,7 +30,9 @@ To run the Quantum Observer application on your local machine, follow these step
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) (v18 or later recommended)
+- [Python](https://www.python.org/downloads/) (v3.9 or later recommended)
 - [npm](https://www.npmjs.com/) (or another package manager like yarn or pnpm)
+- [pip](https://pip.pypa.io/en/stable/installation/)
 
 ### 1. Clone the Repository
 
@@ -40,44 +43,49 @@ git clone <repository-url>
 cd quantum-observer
 ```
 
-### 2. Install Dependencies
-
-Install the necessary project dependencies using npm:
-
-```bash
-npm install
-```
-
-### 3. Set Up Environment Variables
+### 2. Set Up Environment Variables
 
 Create a copy of the `.env` file and name it `.env.local`:
 ```bash
 cp .env .env.local
 ```
 
-Open the `.env.local` file and add your API keys.
+Open the `.env.local` file and add your Google AI API key.
+```
+GEMINI_API_KEY=your_gemini_api_key_here
+```
+The Python backend uses a hard-coded demo token for the IBM Quantum service. For production use, you should modify `main.py` to load credentials securely. The Next.js app also supports a fallback real-time mode which can be configured here:
+```
+QISKIT_API_KEY=your_qiskit_api_key_here
+```
 
-- **For AI features (Genkit):**
-  ```
-  GEMINI_API_KEY=your_gemini_api_key_here
-  ```
-- **For live Qiskit data (optional):**
-  From your [IBM Quantum Account](https://quantum.ibm.com/account), copy your API token and add it.
-  ```
-  QISKIT_API_KEY=your_qiskit_api_key_here
-  ```
+### 3. Install Dependencies & Run
 
-### 4. Run the Development Server
+You will need to run two separate processes in two terminals: the Next.js frontend and the Python backend.
 
-Start the Next.js development server:
+#### Terminal 1: Frontend (Next.js)
+
+Install the necessary project dependencies and start the development server:
 
 ```bash
+npm install
 npm run dev
 ```
 
-The application will be available at `http://localhost:9002`. By default, it will use mock data. To connect to the live Qiskit API, turn off "Demo" mode in the UI.
+The application will be available at `http://localhost:3000`.
 
-### 5. Run the Genkit Inspector (Optional)
+#### Terminal 2: Backend (Python + FastAPI)
+
+Install the Python dependencies and start the FastAPI server:
+
+```bash
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
+
+The backend API will be available at `http://localhost:8000`. The frontend is configured to communicate with this API.
+
+### 4. Run the Genkit Inspector (Optional)
 
 To inspect and debug your Genkit flows, you can run the Genkit Inspector in a separate terminal:
 
@@ -89,35 +97,21 @@ This will start the inspector, which is typically available at `http://localhost
 
 ## Project Structure
 
-The project follows a standard Next.js App Router structure, with clear separation of concerns to enhance maintainability and scalability.
+The project follows a standard Next.js App Router structure, with the Python backend located at the root.
 
 ```
 quantum-observer/
-├── public/                 # Static assets (images, icons, etc.)
+├── public/                 # Static assets
 ├── src/
-│   ├── app/                # Next.js App Router for pages and layouts
-│   │   ├── api/            # API routes
-│   │   │   └── mock/       # API for mock and real data
-│   │   │       └── route.ts
-│   │   ├── globals.css     # Global styles and ShadCN theme
-│   │   ├── layout.tsx      # Root layout for the application
-│   │   └── page.tsx        # Main page component
-│   │
+│   ├── app/                # Next.js App Router pages and layouts
 │   ├── components/         # Reusable React components
-│   │   ├── dashboard/      # Dashboard-specific components
-│   │   ├── ui/             # ShadCN UI components
-│   │   └── providers/      # React Context Providers (e.g., ThemeProvider)
-│   │
 │   ├── ai/                 # Genkit AI logic
-│   │   ├── flows/          # AI flows for specific tasks
-│   │   └── genkit.ts       # Genkit initialization
-│   │
-│   ├── hooks/              # Custom React hooks (e.g., useToast)
+│   ├── hooks/              # Custom React hooks
 │   └── lib/                # Utility functions and type definitions
-│       ├── types.ts        # TypeScript type definitions
-│       └── utils.ts        # Utility functions (e.g., cn for classnames)
 │
 ├── .env                    # Environment variable template
+├── main.py                 # Python FastAPI backend server
+├── requirements.txt        # Python dependencies
 ├── next.config.ts          # Next.js configuration
 ├── tailwind.config.ts      # Tailwind CSS configuration
 ├── tsconfig.json           # TypeScript configuration
