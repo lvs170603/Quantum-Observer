@@ -17,12 +17,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge"
 import type { Job, JobStatus } from "@/lib/types"
 import { formatDistanceToNow } from "date-fns"
 import { Button } from "../ui/button"
-import { ListFilter } from "lucide-react"
+import { ListFilter, MoreHorizontal } from "lucide-react"
 import Link from "next/link"
+import { useToast } from "@/hooks/use-toast";
 
 interface JobsTableProps {
   jobs: Job[];
@@ -49,6 +56,16 @@ export function JobsTable({
   onNextPage,
   onPrevPage,
 }: JobsTableProps) {
+  const { toast } = useToast();
+  
+  const handleCopy = (id: string) => {
+    navigator.clipboard.writeText(id);
+    toast({
+      title: "Copied!",
+      description: "Job ID has been copied to your clipboard.",
+    });
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -75,6 +92,7 @@ export function JobsTable({
                 <TableHead className="hidden md:table-cell">Backend</TableHead>
                 <TableHead className="hidden sm:table-cell">Submitted</TableHead>
                 <TableHead>User</TableHead>
+                <TableHead><span className="sr-only">Actions</span></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -91,6 +109,21 @@ export function JobsTable({
                     {formatDistanceToNow(new Date(job.submitted), { addSuffix: true })}
                   </TableCell>
                   <TableCell>{job.user}</TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                     <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => onJobSelect(job)}>View Details</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleCopy(job.id)}>Copy Job ID</DropdownMenuItem>
+                        <DropdownMenuItem disabled>Cancel Job</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
