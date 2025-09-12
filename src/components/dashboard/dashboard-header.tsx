@@ -1,7 +1,7 @@
 
 "use client"
 
-import { BrainCircuit, RefreshCw, SlidersHorizontal } from "lucide-react"
+import { BrainCircuit, RefreshCw, SlidersHorizontal, User } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { ThemeToggle } from "@/components/dashboard/theme-toggle"
 import { Button } from "@/components/ui/button"
@@ -9,6 +9,9 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useRouter } from "next/navigation"
 
 
 type DashboardHeaderProps = {
@@ -34,6 +37,13 @@ export function DashboardHeader({
   isFetching,
   onRefresh,
 }: DashboardHeaderProps) {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    // In a real app, you'd clear session/token here
+    router.push('/login');
+  };
+  
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:h-16 sm:px-6">
       <div className="flex items-center gap-2">
@@ -126,6 +136,27 @@ export function DashboardHeader({
             </Button>
         </div>
         <ThemeToggle />
+
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                   <Avatar>
+                        <AvatarImage src="https://picsum.photos/seed/user/32/32" />
+                        <AvatarFallback>
+                            <User />
+                        </AvatarFallback>
+                    </Avatar>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <DropdownMenuItem>Settings</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
