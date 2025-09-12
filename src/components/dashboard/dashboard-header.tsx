@@ -109,7 +109,7 @@ export function DashboardHeader({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" onClick={onRefresh} disabled={isFetching}>
+                  <Button variant="outline" size="sm" onClick={onRefresh} disabled={isFetching}>
                       <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
                       Refresh
                   </Button>
