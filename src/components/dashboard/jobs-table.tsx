@@ -21,7 +21,7 @@ import { Badge } from "@/components/ui/badge"
 import type { Job, JobStatus } from "@/lib/types"
 import { formatDistanceToNow } from "date-fns"
 import { Button } from "../ui/button"
-import { Filter } from "lucide-react"
+import { ListFilter } from "lucide-react"
 import Link from "next/link"
 
 interface JobsTableProps {
@@ -59,12 +59,14 @@ export function JobsTable({
           <CardDescription>A list of recent and ongoing quantum jobs.</CardDescription>
         </div>
          <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={onViewRunningJobs}>
+              <ListFilter />
+              <span className="sr-only">Show Running Jobs</span>
+          </Button>
           <Link href="/dashboard/jobs" passHref>
-            <Button variant="ghost" size="icon" asChild>
-                <span>
-                    <Filter />
-                    <span className="sr-only">View all jobs</span>
-                </span>
+            <Button variant="ghost" size="icon">
+                <Filter />
+                <span className="sr-only">View all jobs</span>
             </Button>
          </Link>
         </div>
