@@ -22,6 +22,7 @@ import type { Job, JobStatus } from "@/lib/types"
 import { formatDistanceToNow } from "date-fns"
 import { Button } from "../ui/button"
 import { ExternalLink } from "lucide-react"
+import Link from "next/link"
 
 interface JobsTableProps {
   jobs: Job[];
@@ -55,10 +56,14 @@ export function JobsTable({
           <CardTitle>Live Jobs</CardTitle>
           <CardDescription>A list of recent and ongoing quantum jobs.</CardDescription>
         </div>
-         <Button variant="ghost" size="icon">
-            <ExternalLink />
-            <span className="sr-only">View all jobs</span>
-        </Button>
+         <Link href="/dashboard/jobs" target="_blank" passHref>
+            <Button variant="ghost" size="icon" asChild>
+                <a>
+                    <ExternalLink />
+                    <span className="sr-only">View all jobs</span>
+                </a>
+            </Button>
+         </Link>
       </CardHeader>
       <CardContent>
         <div className="relative">
