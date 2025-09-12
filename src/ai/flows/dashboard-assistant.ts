@@ -1,12 +1,12 @@
 'use server';
 /**
- * @fileOverview Genkit flow for the 'Quantum Observer' dashboard assistant.
+ * @fileOverview Genkit flow for the 'Quantum Observer' dashboard assistant (cat-bot).
  *
  * Features:
- * - Short, helpful answers (2–3 sentences).
- * - Structured output: plain text + optional action for UI triggers.
- * - Error handling for resilience.
- * - Extensible schema (easy to add new fields later).
+ * - Clear, accurate, dashboard-specific answers (2–3 sentences).
+ * - Structured output: text + optional UI action.
+ * - Session memory support for follow-up questions.
+ * - Error handling with safe fallbacks.
  */
 
 import { ai } from '@/ai/genkit';
@@ -14,14 +14,23 @@ import { z } from 'genkit';
 
 /* ---------- Schemas ---------- */
 
-// Input: user query about the dashboard
-const DashboardAssistantInputSchema = z.string().describe(
-  "The user's question about the Quantum Observer dashboard."
-);
+// Input: user query + optional conversation history
+const DashboardAssistantInputSchema = z.object({
+  query: z.string().describe("The user's question about the Quantum Observer dashboard."),
+  history: z
+    .array(
+      z.object({
+        user: z.string(),
+        assistant: z.string(),
+      })
+    )
+    .optional()
+    .describe('Conversation history for context-aware responses.'),
+});
 
-// Output: response text + optional action for UI integration
+// Output: structured response
 const DashboardAssistantOutputSchema = z.object({
-  text: z.string().describe('Concise assistant response.'),
+  text: z.string().describe('Concise assistant response (2–3 sentences).'),
   action: z
     .enum([
       'FILTER_LIVE_JOBS',
@@ -34,7 +43,7 @@ const DashboardAssistantOutputSchema = z.object({
       'NONE',
     ])
     .default('NONE')
-    .describe('Optional UI action that the assistant suggests.'),
+    .describe('UI action the assistant suggests, or NONE if just text.'),
 });
 
 /* ---------- Prompt ---------- */
@@ -44,16 +53,17 @@ const dashboardAssistantPrompt = ai.definePrompt({
   input: { schema: DashboardAssistantInputSchema },
   output: { schema: DashboardAssistantOutputSchema },
   prompt: `
-You are an AI assistant for the 'Quantum Observer' dashboard, a tool for monitoring quantum computing jobs.
+You are **Cat-Bot**, an AI assistant for the 'Quantum Observer' dashboard.
 
-Guidelines:
-- Be clear and concise (2–3 sentences max).
-- Suggest actions when relevant (e.g., "Show the Daily Summary bar chart").
-- Otherwise, just return a helpful text answer.
+### Rules:
+- Always answer based ONLY on the features listed below.
+- Keep answers short (2–3 sentences).
+- If unsure or unrelated, say: "I can only answer questions about the dashboard."
+- Suggest actions when appropriate by setting the "action" field.
 
-Dashboard features:
+### Dashboard Features:
 - KPI Cards: Total Jobs, Live Jobs, Avg Wait Time, Success Rate, Open Sessions.
-- Live Jobs Table: recent jobs, details panel, all jobs page.
+- Live Jobs Table: recent jobs, details, link to all jobs page.
 - Backend Health: qubit count, queue depth, error rate.
 - Daily Summary: bar chart of completed jobs per backend (today).
 - Job Status Over Time Chart: stacked area (last 12 hours).
@@ -62,7 +72,8 @@ Dashboard features:
 - All Jobs Page: view/search/filter.
 - Sessions Page: active sessions.
 
-User Question: {input}
+Conversation history (if any): {history}
+User question: {query}
 `,
 });
 
@@ -83,12 +94,13 @@ const dashboardAssistantFlow = ai.defineFlow(
 /* ---------- Public API ---------- */
 
 export async function askDashboardAssistant(
-  query: string
+  query: string,
+  history: { user: string; assistant: string }[] = []
 ): Promise<z.infer<typeof DashboardAssistantOutputSchema>> {
   try {
-    return await dashboardAssistantFlow(query);
+    return await dashboardAssistantFlow({ query, history });
   } catch (err) {
-    console.error('Assistant error:', err);
+    console.error('Cat-Bot error:', err);
     return {
       text: "Sorry, I couldn't process that request.",
       action: 'NONE',
