@@ -1,7 +1,7 @@
 
 "use client"
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { ChartTooltipContent, ChartContainer } from "@/components/ui/chart"
 import type { DailyJobSummary } from "@/lib/types"
@@ -11,7 +11,7 @@ interface DailySummaryChartProps {
   data: DailyJobSummary;
 }
 
-export function DailySummaryChart({ data }: DailySummaryChartProps) {
+export function DailySummaryChart({ data }: DailyJobSummaryChartProps) {
   const chartData = data.completedByBackend;
   const chartConfig = Object.fromEntries(
     chartData.map(item => [item.name, { label: item.name, color: item.fill }])
