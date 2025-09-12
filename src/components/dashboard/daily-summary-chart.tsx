@@ -1,7 +1,7 @@
 
 "use client"
 
-import { Pie, PieChart, ResponsiveContainer, Cell, Tooltip } from "recharts"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { ChartTooltipContent, ChartContainer } from "@/components/ui/chart"
 import type { DailyJobSummary } from "@/lib/types"
@@ -28,59 +28,28 @@ export function DailySummaryChart({ data }: DailySummaryChartProps) {
       <CardContent>
         <ChartContainer
           config={chartConfig}
-          className="mx-auto aspect-square h-[250px]"
+          className="h-[250px] w-full"
         >
           <ResponsiveContainer>
-            <PieChart>
+            <BarChart data={chartData} layout="vertical" margin={{left: 10, right: 20}}>
+              <XAxis type="number" hide />
+              <YAxis 
+                dataKey="name" 
+                type="category" 
+                tickLine={false} 
+                axisLine={false}
+                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                />
               <Tooltip
                 cursor={false}
                 content={<ChartTooltipContent hideLabel nameKey="name" />}
               />
-              <Pie
-                data={chartData}
-                dataKey="value"
-                nameKey="name"
-                innerRadius={60}
-                strokeWidth={5}
-                labelLine={false}
-                label={({
-                  cx,
-                  cy,
-                  midAngle,
-                  innerRadius,
-                  outerRadius,
-                  percent,
-                  index,
-                }) => {
-                  const RADIAN = Math.PI / 180
-                  const radius = innerRadius + (outerRadius - innerRadius) * 0.5
-                  const x = cx + radius * Math.cos(-midAngle * RADIAN)
-                  const y = cy + radius * Math.sin(-midAngle * RADIAN)
-
-                  return (
-                    <text
-                      x={x}
-                      y={y}
-                      fill="white"
-                      textAnchor={x > cx ? "start" : "end"}
-                      dominantBaseline="central"
-                      className="text-xs font-bold"
-                    >
-                      {`${(percent * 100).toFixed(0)}%`}
-                    </text>
-                  )
-                }}
-                labelStyle={{
-                   fontSize: "12px",
-                   fontWeight: "bold",
-                   fill: "hsl(var(--foreground))"
-                }}
-              >
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
+              <Bar dataKey="value" layout="vertical" radius={5}>
+                {chartData.map((entry) => (
+                  <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                 ))}
-              </Pie>
-            </PieChart>
+              </Bar>
+            </BarChart>
           </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
