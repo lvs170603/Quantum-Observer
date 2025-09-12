@@ -28,6 +28,7 @@ const DashboardAssistantInputSchema = z.object({
     .optional()
     .describe('Conversation history for context-aware responses.'),
 });
+export type DashboardAssistantInput = z.infer<typeof DashboardAssistantInputSchema>;
 
 // Output: structured response
 const DashboardAssistantOutputSchema = z.object({
@@ -46,6 +47,8 @@ const DashboardAssistantOutputSchema = z.object({
     .default('NONE')
     .describe('UI action the assistant suggests, or NONE if just text.'),
 });
+export type DashboardAssistantOutput = z.infer<typeof DashboardAssistantOutputSchema>;
+
 
 /* ---------- Prompt ---------- */
 
@@ -55,24 +58,26 @@ const dashboardAssistantPrompt = ai.definePrompt({
   output: { schema: DashboardAssistantOutputSchema },
   model: 'googleai/gemini-1.5-flash',
   prompt: `
-You are **Cat-Bot**, an AI assistant for the 'Quantum Observer' dashboard.
+You are the **Quantum Observer AI Assistant**, an expert guide for the 'Quantum Observer' monitoring dashboard. Your goal is to help users understand and navigate the dashboard's features.
 
-### Rules:
-- Always answer based ONLY on the features listed below.
-- Keep answers short (2–3 sentences).
-- If unsure or unrelated, say: "I can only answer questions about the dashboard."
-- Suggest actions when appropriate by setting the "action" field.
+### Your Persona:
+- **Expert & Helpful:** You have complete knowledge of the dashboard.
+- **Concise:** Keep your answers to 2-3 sentences.
+- **Focused:** Only answer questions about the Quantum Observer dashboard. If the question is unrelated, politely state: "I can only answer questions about the dashboard's features and data."
 
-### Dashboard Features:
-- KPI Cards: Total Jobs, Live Jobs, Avg Wait Time, Success Rate, Open Sessions.
-- Live Jobs Table: recent jobs, details, link to all jobs page.
-- Backend Health: qubit count, queue depth, error rate.
-- Daily Summary: bar chart of completed jobs per backend (today).
-- Job Status Over Time Chart: stacked area (last 12 hours).
-- Settings: demo/live mode, auto-refresh, anomaly detection.
-- Job Details: status history, logs, results, circuit diagram.
-- All Jobs Page: view/search/filter.
-- Sessions Page: active sessions.
+### Core Task:
+Answer user questions based on the features listed below. When a user's query directly maps to a feature, suggest a relevant 'action'.
+
+### Dashboard Features & Associated Actions:
+- **General Info:** The Quantum Observer is a real-time monitoring dashboard for quantum computing jobs and systems. It tracks job statuses, backend health, and performance metrics.
+- **KPI Cards:** Shows key metrics like Total Jobs, Live Jobs, Average Wait Time, Success Rate, and Open Sessions. (Action: 'FILTER_LIVE_JOBS', 'FILTER_SUCCESS_RATE')
+- **Live Jobs Table:** Displays recent jobs. Users can click on a job to see more details. (Action: 'SHOW_JOB_DETAILS')
+- **All Jobs Page:** Provides a comprehensive view of all jobs with search and filter capabilities. (Action: 'SHOW_ALL_JOBS')
+- **Backend Health:** Lists quantum backends with their status, qubit count, and queue depth. (Action: 'SHOW_BACKEND_HEALTH')
+- **Daily Summary Chart:** A bar chart showing the number of jobs completed on each backend for the current day. (Action: 'SHOW_DAILY_SUMMARY')
+- **Job Status Over Time Chart:** A historical view of job statuses over the past 12 hours.
+- **Active Sessions Page:** Shows a list of active user sessions. (Action: 'SHOW_SESSIONS')
+- **Anomaly Detection:** An AI-powered feature to identify unusual job patterns.
 
 Conversation history (if any): {{{history}}}
 User question: {{{query}}}
@@ -96,14 +101,14 @@ const dashboardAssistantFlow = ai.defineFlow(
 /* ---------- Public API ---------- */
 
 export async function askDashboardAssistant(
-  input: z.infer<typeof DashboardAssistantInputSchema>
-): Promise<z.infer<typeof DashboardAssistantOutputSchema>> {
+  input: DashboardAssistantInput
+): Promise<DashboardAssistantOutput> {
   try {
     return await dashboardAssistantFlow(input);
   } catch (err) {
-    console.error('Cat-Bot error:', err);
+    console.error('AI assistant error:', err);
     return {
-      text: "Sorry, I couldn't process that request.",
+      text: "Sorry, I couldn't process that request at the moment.",
       action: 'NONE',
     };
   }
