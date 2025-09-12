@@ -21,7 +21,7 @@ import { Badge } from "@/components/ui/badge"
 import type { Job, JobStatus } from "@/lib/types"
 import { formatDistanceToNow } from "date-fns"
 import { Button } from "../ui/button"
-import { ListFilter } from "lucide-react"
+import { ListFilter, Filter } from "lucide-react"
 import Link from "next/link"
 
 interface JobsTableProps {
