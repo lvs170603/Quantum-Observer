@@ -155,10 +155,6 @@ export default function DashboardPage() {
     }
   };
   
-  const handleViewRunningJobs = () => {
-    setStatusFilter('RUNNING');
-  };
-
   const backendNames = useMemo(() => backends.map(b => b.name), [backends]);
   
   const totalPages = Math.ceil(filteredJobs.length / JOBS_PER_PAGE);
@@ -266,7 +262,6 @@ export default function DashboardPage() {
               totalPages={totalPages}
               onNextPage={handleNextPage}
               onPrevPage={handlePrevPage}
-              onViewRunningJobs={handleViewRunningJobs}
             />
           </div>
           <div className="lg:col-span-2 space-y-4">

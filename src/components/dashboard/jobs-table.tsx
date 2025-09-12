@@ -21,7 +21,7 @@ import { Badge } from "@/components/ui/badge"
 import type { Job, JobStatus } from "@/lib/types"
 import { formatDistanceToNow } from "date-fns"
 import { Button } from "../ui/button"
-import { ListFilter, Filter } from "lucide-react"
+import { ListFilter } from "lucide-react"
 import Link from "next/link"
 
 interface JobsTableProps {
@@ -31,7 +31,6 @@ interface JobsTableProps {
   totalPages: number;
   onNextPage: () => void;
   onPrevPage: () => void;
-  onViewRunningJobs: () => void;
 }
 
 const statusStyles: Record<JobStatus, string> = {
@@ -49,7 +48,6 @@ export function JobsTable({
   totalPages,
   onNextPage,
   onPrevPage,
-  onViewRunningJobs,
 }: JobsTableProps) {
   return (
     <Card>
@@ -59,10 +57,6 @@ export function JobsTable({
           <CardDescription>A list of recent and ongoing quantum jobs.</CardDescription>
         </div>
          <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={onViewRunningJobs}>
-              <Filter />
-              <span className="sr-only">Show Running Jobs</span>
-          </Button>
           <Link href="/dashboard/jobs" passHref>
             <Button variant="ghost" size="icon">
                 <ListFilter />
