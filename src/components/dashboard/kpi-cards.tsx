@@ -21,7 +21,6 @@ const kpiConfig = [
     description: "Total jobs processed in the period",
     format: (value: number) => value.toString(),
     clickable: false,
-    hoverable: true,
   },
   {
     title: "Live Jobs",
@@ -38,7 +37,6 @@ const kpiConfig = [
     description: "Average time jobs spend in queue",
     format: (value: number) => `${Math.round(value / 60)}m ${Math.round(value % 60)}s`,
     clickable: false,
-    hoverable: true,
   },
   {
     title: "Success Rate",
@@ -97,21 +95,12 @@ export function KpiCards({ onCardClick, activeView, ...metrics }: KpiCardsProps)
             key={kpi.title} 
             className={cn(
               "transition-colors", 
-              (kpi.clickable || kpi.hoverable) && "hover:bg-muted",
+              kpi.clickable && "cursor-pointer hover:bg-muted",
               isActive && "bg-primary/10 border-primary"
             )}
+            onClick={kpi.clickable ? () => handleCardClick(kpi.key) : undefined}
           >
-            {kpi.clickable ? (
-              <button
-                onClick={() => handleCardClick(kpi.key)}
-                className="w-full text-left p-0 focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
-                aria-pressed={isActive && kpi.key !== 'open_sessions'}
-              >
-                {cardInnerContent}
-              </button>
-            ) : (
-              <div className="p-0">{cardInnerContent}</div>
-            )}
+             {cardInnerContent}
           </Card>
         );
       })}
