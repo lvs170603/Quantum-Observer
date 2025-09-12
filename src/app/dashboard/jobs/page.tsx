@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Download, FileText, RefreshCw, Search } from "lucide-react";
-import type { Job } from "@/lib/types";
+import type { Job, JobStatus } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,6 +14,8 @@ import { useToast } from "@/hooks/use-toast";
 import { JobDetailsDrawer } from "@/components/dashboard/job-details-drawer";
 import { ExportDialog } from "@/components/dashboard/export-dialog";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 const statusStyles: Record<Job['status'], string> = {
   COMPLETED: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-200 dark:border-green-700/80",
@@ -31,11 +33,11 @@ export default function AllJobsPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<JobStatus | "all">("all");
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
     setIsFetching(true);
-    // Assuming demo=true fetches all mock jobs, adjust if API supports fetching all
     const url = `/api/mock?demo=true`; 
     try {
       const response = await fetch(url);
@@ -61,12 +63,18 @@ export default function AllJobsPage() {
   }, [fetchData]);
   
   const filteredJobs = useMemo(() => {
-    if (!searchQuery) return jobs;
-    return jobs.filter(job =>
-      job.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.user.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [jobs, searchQuery]);
+    let filtered = jobs;
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(job => job.status === statusFilter);
+    }
+    if (searchQuery) {
+      filtered = filtered.filter(job =>
+        job.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        job.user.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    return filtered;
+  }, [jobs, searchQuery, statusFilter]);
 
   const handleJobSelect = (job: Job) => {
     setSelectedJob(job);
@@ -98,16 +106,31 @@ export default function AllJobsPage() {
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                       type="search"
-                      placeholder="Search by Job ID or User..."
-                      className="w-full pl-8 sm:w-[250px] lg:w-[300px]"
+                      placeholder="Search..."
+                      className="w-full pl-8 sm:w-[180px] lg:w-[200px]"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
+                 <div className="grid gap-1.5 w-full sm:w-auto">
+                    <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
+                      <SelectTrigger className="w-full sm:w-[150px]">
+                        <SelectValue placeholder="Filter by status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Statuses</SelectItem>
+                        <SelectItem value="COMPLETED">Completed</SelectItem>
+                        <SelectItem value="RUNNING">Running</SelectItem>
+                        <SelectItem value="QUEUED">Queued</SelectItem>
+                        <SelectItem value="ERROR">Error</SelectItem>
+                        <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={fetchData} disabled={isFetching}>
-                        <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
-                        Refresh
+                    <Button variant="outline" size="icon" onClick={fetchData} disabled={isFetching}>
+                        <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+                         <span className="sr-only">Refresh</span>
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => setIsExportDialogOpen(true)}>
                         <Download className="mr-2 h-4 w-4" />
