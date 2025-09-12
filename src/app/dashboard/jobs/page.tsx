@@ -72,15 +72,17 @@ export default function AllJobsPage() {
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>All Jobs</CardTitle>
-              <CardDescription>A complete list of all jobs in the system.</CardDescription>
+          <CardHeader>
+             <div className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>All Jobs</CardTitle>
+                <CardDescription>A complete list of all jobs in the system.</CardDescription>
+              </div>
+              <Button variant="outline" size="sm">
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
             </div>
-            <Button variant="outline" size="sm">
-              <Download className="mr-2 h-4 w-4" />
-              Export
-            </Button>
           </CardHeader>
           <CardContent>
             <Table>
