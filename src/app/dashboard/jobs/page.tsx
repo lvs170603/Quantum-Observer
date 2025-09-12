@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Download, FileText, RefreshCw, Search } from "lucide-react";
+import { ArrowLeft, Download, FileText, MoreHorizontal, RefreshCw, Search } from "lucide-react";
 import type { Job, JobStatus } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import { ExportDialog } from "@/components/dashboard/export-dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const statusStyles: Record<Job['status'], string> = {
   COMPLETED: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-200 dark:border-green-700/80",
@@ -23,6 +24,7 @@ const statusStyles: Record<Job['status'], string> = {
   QUEUED: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700/80",
   ERROR: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 border-red-200 dark:border-red-700/80",
   CANCELLED: "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-400 border-gray-200 dark:border-gray-700/80",
+  UNKNOWN: "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-400 border-gray-200 dark:border-gray-700/80",
 };
 
 const JOBS_PER_PAGE_OPTIONS = [10, 20, 50];
@@ -95,6 +97,14 @@ export default function AllJobsPage() {
     setIsDrawerOpen(true);
   };
   
+  const handleCopy = (id: string) => {
+    navigator.clipboard.writeText(id);
+    toast({
+      title: "Copied!",
+      description: "Job ID has been copied to your clipboard.",
+    });
+  };
+
   const handleNextPage = () => {
     setCurrentPage(prev => Math.min(prev + 1, totalPages));
   };
@@ -171,36 +181,55 @@ export default function AllJobsPage() {
                   <TableHead>Backend</TableHead>
                   <TableHead>Submitted</TableHead>
                   <TableHead>User</TableHead>
+                  <TableHead><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isFetching ? (
                   Array.from({ length: jobsPerPage }).map((_, i) => (
                     <TableRow key={i}>
-                      <TableCell colSpan={5} className="h-12 text-center">
+                      <TableCell colSpan={6} className="h-12 text-center">
                         <span className="animate-pulse">Loading...</span>
                       </TableCell>
                     </TableRow>
                   ))
                 ) : paginatedJobs.length > 0 ? (
                   paginatedJobs.map((job) => (
-                    <TableRow key={job.id} onClick={() => handleJobSelect(job)} className="cursor-pointer">
-                      <TableCell className="font-mono text-xs truncate max-w-[100px] sm:max-w-xs">{job.id}</TableCell>
-                      <TableCell>
+                    <TableRow key={job.id} >
+                      <TableCell onClick={() => handleJobSelect(job)} className="font-mono text-xs truncate max-w-[100px] sm:max-w-xs cursor-pointer">{job.id}</TableCell>
+                      <TableCell onClick={() => handleJobSelect(job)} className="cursor-pointer">
                         <Badge variant="outline" className={statusStyles[job.status]}>
                           {job.status}
                         </Badge>
                       </TableCell>
-                      <TableCell>{job.backend}</TableCell>
-                      <TableCell>
+                      <TableCell onClick={() => handleJobSelect(job)} className="cursor-pointer">{job.backend}</TableCell>
+                      <TableCell onClick={() => handleJobSelect(job)} className="cursor-pointer">
                         {formatDistanceToNow(new Date(job.submitted), { addSuffix: true })}
                       </TableCell>
-                      <TableCell>{job.user}</TableCell>
+                      <TableCell onClick={() => handleJobSelect(job)} className="cursor-pointer">{job.user}</TableCell>
+                       <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleJobSelect(job)}>
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleCopy(job.id)}>
+                              Copy ID
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
+                    <TableCell colSpan={6} className="h-24 text-center">
                       No results found.
                     </TableCell>
                   </TableRow>
@@ -259,3 +288,5 @@ export default function AllJobsPage() {
     </div>
   );
 }
+
+    
