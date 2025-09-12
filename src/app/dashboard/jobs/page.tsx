@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Download, FileText, MoreHorizontal, RefreshCw, Search } from "lucide-react";
+import { ArrowLeft, Download, FileText, MoreVertical, RefreshCw, Search } from "lucide-react";
 import type { Job, JobStatus } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -212,7 +212,7 @@ export default function AllJobsPage() {
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
                               <span className="sr-only">Open menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
+                              <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -288,5 +288,3 @@ export default function AllJobsPage() {
     </div>
   );
 }
-
-    
