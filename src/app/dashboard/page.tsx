@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -40,7 +39,9 @@ export default function DashboardPage() {
   const [isProfileSheetOpen, setIsProfileSheetOpen] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil((jobs?.length || 0) / JOBS_PER_PAGE);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<JobStatus | "all">("all");
+  const [backendFilter, setBackendFilter] = useState<string>("all");
 
   const { toast } = useToast();
 
@@ -130,6 +131,30 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, [autoRefresh, fetchData]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter, backendFilter]);
+
+  const filteredJobs = useMemo(() => {
+    let filtered = jobs;
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(job => job.status === statusFilter);
+    }
+    if (backendFilter !== 'all') {
+      filtered = filtered.filter(job => job.backend === backendFilter);
+    }
+    if (searchQuery) {
+      filtered = filtered.filter(job =>
+        job.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        job.user.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    return filtered;
+  }, [jobs, searchQuery, statusFilter, backendFilter]);
+
+
+  const totalPages = Math.ceil((filteredJobs.length || 0) / JOBS_PER_PAGE);
+
   const handleKpiCardClick = (kpiKey: string) => {
     if (kpiKey === "live_jobs" || kpiKey === "success_rate") {
       setChartView(kpiKey as ChartView);
@@ -152,11 +177,11 @@ export default function DashboardPage() {
   };
 
   const paginatedJobs = useMemo(() => {
-    return jobs.slice(
+    return filteredJobs.slice(
       (currentPage - 1) * JOBS_PER_PAGE,
       currentPage * JOBS_PER_PAGE
     );
-  }, [jobs, currentPage]);
+  }, [filteredJobs, currentPage]);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -189,7 +214,7 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            {paginatedJobs.length > 0 ? (
+            {paginatedJobs.length > 0 || isFetching ? (
                 <JobsTable
                     jobs={paginatedJobs}
                     onJobSelect={handleJobSelect}
@@ -197,6 +222,14 @@ export default function DashboardPage() {
                     totalPages={totalPages}
                     onNextPage={handleNextPage}
                     onPrevPage={handlePrevPage}
+                    searchQuery={searchQuery}
+                    onSearchQueryChange={setSearchQuery}
+                    statusFilter={statusFilter}
+                    onStatusFilterChange={setStatusFilter}
+                    backendFilter={backendFilter}
+                    onBackendFilterChange={setBackendFilter}
+                    allBackends={backends.map(b => b.name)}
+                    isFetching={isFetching}
                 />
             ) : (
                 <Skeleton className="h-[500px]" />

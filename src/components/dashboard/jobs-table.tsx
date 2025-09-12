@@ -27,9 +27,11 @@ import { Badge } from "@/components/ui/badge"
 import type { Job, JobStatus } from "@/lib/types"
 import { formatDistanceToNow } from "date-fns"
 import { Button } from "../ui/button"
-import { ListFilter, MoreHorizontal } from "lucide-react"
+import { ListFilter, MoreHorizontal, Search } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface JobsTableProps {
   jobs: Job[];
@@ -38,6 +40,14 @@ interface JobsTableProps {
   totalPages: number;
   onNextPage: () => void;
   onPrevPage: () => void;
+  searchQuery: string;
+  onSearchQueryChange: (query: string) => void;
+  statusFilter: JobStatus | "all";
+  onStatusFilterChange: (status: JobStatus | "all") => void;
+  backendFilter: string;
+  onBackendFilterChange: (backend: string) => void;
+  allBackends: string[];
+  isFetching: boolean;
 }
 
 const statusStyles: Record<JobStatus, string> = {
@@ -46,6 +56,7 @@ const statusStyles: Record<JobStatus, string> = {
   QUEUED: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700/80",
   ERROR: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 border-red-200 dark:border-red-700/80",
   CANCELLED: "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-400 border-gray-200 dark:border-gray-700/80",
+  UNKNOWN: "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-400 border-gray-200 dark:border-gray-700/80",
 };
 
 export function JobsTable({
@@ -55,6 +66,14 @@ export function JobsTable({
   totalPages,
   onNextPage,
   onPrevPage,
+  searchQuery,
+  onSearchQueryChange,
+  statusFilter,
+  onStatusFilterChange,
+  backendFilter,
+  onBackendFilterChange,
+  allBackends,
+  isFetching
 }: JobsTableProps) {
   const { toast } = useToast();
   
@@ -68,18 +87,54 @@ export function JobsTable({
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Live Jobs</CardTitle>
-          <CardDescription>A list of recent and ongoing quantum jobs.</CardDescription>
-        </div>
-         <div className="flex items-center gap-2">
-            <Link href="/dashboard/jobs">
-              <Button variant="ghost" size="icon">
-                  <ListFilter />
-                  <span className="sr-only">View all jobs</span>
-              </Button>
-            </Link>
+      <CardHeader>
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex-1">
+                <CardTitle>Live Jobs</CardTitle>
+                <CardDescription>A list of recent and ongoing quantum jobs.</CardDescription>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                <div className="relative w-full md:w-auto">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="search"
+                        placeholder="Search jobs..."
+                        className="w-full pl-8 sm:w-[150px] lg:w-[200px]"
+                        value={searchQuery}
+                        onChange={(e) => onSearchQueryChange(e.target.value)}
+                    />
+                </div>
+                <Select value={statusFilter} onValueChange={(value) => onStatusFilterChange(value as any)}>
+                    <SelectTrigger className="w-full sm:w-[150px]">
+                        <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Statuses</SelectItem>
+                        <SelectItem value="COMPLETED">Completed</SelectItem>
+                        <SelectItem value="RUNNING">Running</SelectItem>
+                        <SelectItem value="QUEUED">Queued</SelectItem>
+                        <SelectItem value="ERROR">Error</SelectItem>
+                        <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                    </SelectContent>
+                </Select>
+                 <Select value={backendFilter} onValueChange={(value) => onBackendFilterChange(value as any)}>
+                    <SelectTrigger className="w-full sm:w-[150px]">
+                        <SelectValue placeholder="Filter by backend" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Backends</SelectItem>
+                        {allBackends.map(backend => (
+                            <SelectItem key={backend} value={backend}>{backend}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <Link href="/dashboard/jobs" passHref>
+                    <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                        <ListFilter className="mr-2 h-4 w-4" />
+                        View All
+                    </Button>
+                </Link>
+            </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -96,43 +151,59 @@ export function JobsTable({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {jobs.map((job) => (
-                <TableRow key={job.id} onClick={() => onJobSelect(job)} className="cursor-pointer">
-                  <TableCell className="font-mono text-xs truncate max-w-[100px] sm:max-w-xs">{job.id}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={statusStyles[job.status]}>
-                      {job.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">{job.backend}</TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    {formatDistanceToNow(new Date(job.submitted), { addSuffix: true })}
-                  </TableCell>
-                  <TableCell>{job.user}</TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onJobSelect(job)}>View Details</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleCopy(job.id)}>Copy Job ID</DropdownMenuItem>
-                        <DropdownMenuItem disabled>Cancel Job</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {isFetching && jobs.length === 0 ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell colSpan={6} className="h-12 text-center">
+                      <span className="animate-pulse">Loading...</span>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : jobs.length > 0 ? (
+                  jobs.map((job) => (
+                    <TableRow key={job.id} onClick={() => onJobSelect(job)} className="cursor-pointer">
+                      <TableCell className="font-mono text-xs truncate max-w-[100px] sm:max-w-xs">{job.id}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusStyles[job.status]}>
+                          {job.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">{job.backend}</TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        {formatDistanceToNow(new Date(job.submitted), { addSuffix: true })}
+                      </TableCell>
+                      <TableCell>{job.user}</TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => onJobSelect(job)}>View Details</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleCopy(job.id)}>Copy Job ID</DropdownMenuItem>
+                            <DropdownMenuItem disabled>Cancel Job</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+              ) : (
+                 <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center">
+                      No results found for your filters.
+                    </TableCell>
+                  </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>
       </CardContent>
        <CardFooter className="flex items-center justify-between">
         <div className="text-xs text-muted-foreground">
-          Showing page {currentPage} of {totalPages}
+          Showing page {currentPage} of {totalPages > 0 ? totalPages : 1}
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -147,7 +218,7 @@ export function JobsTable({
             variant="outline"
             size="sm"
             onClick={onNextPage}
-            disabled={currentPage === totalPages}
+            disabled={currentPage === totalPages || totalPages === 0}
           >
             Next
           </Button>
