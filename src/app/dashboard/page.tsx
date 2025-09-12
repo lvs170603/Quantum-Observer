@@ -11,6 +11,7 @@ import { JobDetailsDrawer } from "@/components/dashboard/job-details-drawer";
 import { AnomalyDialog } from "@/components/dashboard/anomaly-dialog";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DailySummaryChart } from "@/components/dashboard/daily-summary-chart";
+import { ProfileSheet } from "@/components/dashboard/profile-sheet";
 import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ export default function DashboardPage() {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isAnomalyDialogOpen, setIsAnomalyDialogOpen] = useState(false);
+  const [isProfileSheetOpen, setIsProfileSheetOpen] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [backendFilter, setBackendFilter] = useState("all");
@@ -189,6 +191,7 @@ export default function DashboardPage() {
         onOpenFilters={() => setIsFilterSheetOpen(true)}
         isFetching={isFetching}
         onRefresh={fetchData}
+        onOpenProfile={() => setIsProfileSheetOpen(true)}
       />
       <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
         {metrics && <KpiCards onCardClick={handleKpiCardClick} activeView={chartView} {...metrics} />}
@@ -219,6 +222,11 @@ export default function DashboardPage() {
         jobs={jobs}
         isOpen={isAnomalyDialogOpen}
         onOpenChange={setIsAnomalyDialogOpen}
+      />
+
+      <ProfileSheet
+        isOpen={isProfileSheetOpen}
+        onOpenChange={setIsProfileSheetOpen}
       />
 
       <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>

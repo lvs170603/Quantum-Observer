@@ -24,6 +24,7 @@ type DashboardHeaderProps = {
   onOpenFilters: () => void;
   isFetching: boolean;
   onRefresh: () => void;
+  onOpenProfile: () => void;
 };
 
 export function DashboardHeader({
@@ -36,6 +37,7 @@ export function DashboardHeader({
   onOpenFilters,
   isFetching,
   onRefresh,
+  onOpenProfile,
 }: DashboardHeaderProps) {
   const router = useRouter();
 
@@ -141,7 +143,7 @@ export function DashboardHeader({
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
                    <Avatar>
-                        <AvatarImage src="https://picsum.photos/seed/user/32/32" />
+                        <AvatarImage src="https://picsum.photos/seed/user/32/32" data-ai-hint="profile avatar" />
                         <AvatarFallback>
                             <User />
                         </AvatarFallback>
@@ -151,7 +153,7 @@ export function DashboardHeader({
             <DropdownMenuContent align="end">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <DropdownMenuItem onClick={onOpenProfile}>Profile</DropdownMenuItem>
                 <DropdownMenuItem>Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
