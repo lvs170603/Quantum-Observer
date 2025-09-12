@@ -154,6 +154,10 @@ export default function DashboardPage() {
       router.push('/dashboard/sessions');
     }
   };
+  
+  const handleViewRunningJobs = () => {
+    setStatusFilter('RUNNING');
+  };
 
   const backendNames = useMemo(() => backends.map(b => b.name), [backends]);
   
@@ -262,6 +266,7 @@ export default function DashboardPage() {
               totalPages={totalPages}
               onNextPage={handleNextPage}
               onPrevPage={handlePrevPage}
+              onViewRunningJobs={handleViewRunningJobs}
             />
           </div>
           <div className="lg:col-span-2 space-y-4">
