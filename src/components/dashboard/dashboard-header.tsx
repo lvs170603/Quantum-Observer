@@ -117,7 +117,7 @@ export function DashboardHeader({
                   </Button>
               </TooltipTrigger>
               <TooltipContent>
-                  <p>Refresh Data</p>
+                  <p>Refresh</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
