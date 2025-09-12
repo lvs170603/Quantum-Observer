@@ -64,9 +64,17 @@ The Python backend uses a hard-coded demo token for the IBM Quantum service. Thi
 It is recommended to use a Python virtual environment to manage dependencies.
 
 ```bash
-# Create and activate a virtual environment (optional but recommended)
+# First, try running the Python command. It might be 'python' or 'python3'.
+# If 'python3' doesn't work, use 'python' in the commands below.
+
+# Create a virtual environment (optional but recommended)
 python -m venv venv
-source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+
+# Activate the virtual environment
+# On macOS/Linux:
+source venv/bin/activate
+# On Windows:
+venv\Scripts\activate
 
 # Install Python dependencies
 pip install -r requirements.txt
