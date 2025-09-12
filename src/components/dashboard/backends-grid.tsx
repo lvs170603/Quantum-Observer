@@ -11,7 +11,7 @@ interface BackendsGridProps {
   backends: Backend[]
 }
 
-const statusConfig: Record<Backend['status'], { icon: React.ElementType, color: string, label: string }> = {
+const statusConfig: Record<string, { icon: React.ElementType, color: string, label: string }> = {
   active: {
     icon: CheckCircle,
     color: "bg-green-500",

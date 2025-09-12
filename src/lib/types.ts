@@ -20,7 +20,7 @@ export interface Backend {
   status: "active" | "inactive" | "maintenance";
   qubit_count: number;
   queue_depth: number;
-  error_rate: number; // This remains a frontend-only concept from mock data
+  error_rate: number;
 }
 
 export interface Metrics {
