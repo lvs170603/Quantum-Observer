@@ -49,12 +49,16 @@ export function AssistantChat() {
     setIsLoading(true);
 
     try {
-      const history = newMessages.slice(0, -1).reduce((acc, msg, i) => {
-        if (i % 2 === 1 && newMessages[i-1].sender === 'user' && msg.sender === 'bot') {
-            acc.push({ user: newMessages[i-1].text, assistant: msg.text });
+      // Correctly build history from pairs of messages (user then bot)
+      const history: { user: string; assistant: string }[] = [];
+      for (let i = 1; i < newMessages.length - 1; i += 2) {
+        if (newMessages[i].sender === 'user' && newMessages[i + 1]?.sender === 'bot') {
+          history.push({
+            user: newMessages[i].text,
+            assistant: newMessages[i + 1].text,
+          });
         }
-        return acc;
-      }, [] as { user: string; assistant: string }[]);
+      }
       
       const payload: DashboardAssistantInput = { query: input, history };
 
