@@ -1,12 +1,16 @@
 
 import logging
 import hashlib
+import os
 from datetime import timezone
 from typing import Any
+from dotenv import load_dotenv
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from qiskit_ibm_runtime import QiskitRuntimeService
+
+load_dotenv()
 
 # -------------------------
 # Logging
@@ -17,8 +21,7 @@ logger = logging.getLogger("quantum-tracker")
 # -------------------------
 # IBM Quantum Credentials (⚠️ demo)
 # -------------------------
-# It is recommended to move these to environment variables for production
-TOKEN = "7uB1rS41OFhMS_7U9HUwE1bD7ApCAvuNoXC1CpufFL1R"
+TOKEN = os.getenv("IBM_QUANTUM_TOKEN")
 INSTANCE = "crn:v1:bluemix:public:quantum-computing:us-east:a/f337e67a23db46a7b912221b7e84e282:6bac78c7-3180-4d7f-9e06-1cc288de4f52::"
 CHANNEL = "ibm_cloud"
 
