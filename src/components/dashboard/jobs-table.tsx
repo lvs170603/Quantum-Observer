@@ -58,10 +58,10 @@ export function JobsTable({
         </div>
          <Link href="/dashboard/jobs" target="_blank" passHref>
             <Button variant="ghost" size="icon" asChild>
-                <a>
+                <span>
                     <ExternalLink />
                     <span className="sr-only">View all jobs</span>
-                </a>
+                </span>
             </Button>
          </Link>
       </CardHeader>
