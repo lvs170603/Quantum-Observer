@@ -23,7 +23,7 @@ interface ExportDialogProps {
   onOpenChange: (isOpen: boolean) => void;
 }
 
-type ExportFormat = 'csv' | 'pdf' | 'excel';
+type ExportFormat = 'csv' | 'pdf' | 'excel' | 'json';
 
 export function ExportDialog({ jobs, isOpen, onOpenChange }: ExportDialogProps) {
   const [format, setFormat] = useState<ExportFormat>('csv');
@@ -56,6 +56,10 @@ export function ExportDialog({ jobs, isOpen, onOpenChange }: ExportDialogProps) 
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="csv" id="csv" />
               <Label htmlFor="csv">CSV (Comma-Separated Values)</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="json" id="json" />
+              <Label htmlFor="json">JSON (JavaScript Object Notation)</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="pdf" id="pdf" />
