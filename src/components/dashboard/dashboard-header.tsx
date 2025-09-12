@@ -130,18 +130,11 @@ export function DashboardHeader({
                   <p>Refresh data</p>
               </TooltipContent>
             </Tooltip>
-             <Tooltip>
-                <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" onClick={onAnalyze}>
-                        <BrainCircuit className="h-4 w-4" />
-                        <span className="sr-only">Analyze Anomalies</span>
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p>Analyze Anomalies</p>
-                </TooltipContent>
-            </Tooltip>
           </TooltipProvider>
+          <Button variant="outline" size="sm" onClick={onAnalyze}>
+              <BrainCircuit className="mr-2 h-4 w-4" />
+              Analyze Anomalies
+          </Button>
 
         </div>
         
