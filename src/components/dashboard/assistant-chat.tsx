@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useRef, useEffect } from 'react';
@@ -51,7 +50,14 @@ export function AssistantChat() {
     setIsLoading(true);
 
     try {
-      const botResponse = await askDashboardAssistant(input);
+      const history = messages.reduce((acc, msg, i) => {
+        if (msg.sender === 'user' && messages[i+1]?.sender === 'bot') {
+            acc.push({ user: msg.text, assistant: messages[i+1].text });
+        }
+        return acc;
+      }, [] as { user: string, assistant: string }[]);
+      
+      const botResponse = await askDashboardAssistant(input, history);
       const botMessage: Message = { text: botResponse.text, sender: 'bot' };
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {

@@ -72,8 +72,8 @@ You are **Cat-Bot**, an AI assistant for the 'Quantum Observer' dashboard.
 - All Jobs Page: view/search/filter.
 - Sessions Page: active sessions.
 
-Conversation history (if any): {history}
-User question: {query}
+Conversation history (if any): {{{history}}}
+User question: {{{query}}}
 `,
 });
 
