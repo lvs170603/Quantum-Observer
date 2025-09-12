@@ -117,6 +117,20 @@ export function DashboardHeader({
           </Tooltip>
         </TooltipProvider>
 
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button variant="outline" size="icon" onClick={onAnalyze}>
+                        <BrainCircuit className="h-4 w-4" />
+                        <span className="sr-only">Analyze Anomalies</span>
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>Analyze Anomalies</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon">
@@ -141,11 +155,6 @@ export function DashboardHeader({
                         <Switch id="auto-refresh" checked={autoRefresh} onCheckedChange={onToggleRefresh} />
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
-                 <DropdownMenuSeparator />
-                 <DropdownMenuItem onClick={onAnalyze}>
-                    <BrainCircuit className="mr-2 h-4 w-4" />
-                    <span>Analyze Anomalies</span>
-                </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
 
