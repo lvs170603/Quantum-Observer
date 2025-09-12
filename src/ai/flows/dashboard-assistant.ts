@@ -52,6 +52,7 @@ const dashboardAssistantPrompt = ai.definePrompt({
   name: 'dashboardAssistantPrompt',
   input: { schema: DashboardAssistantInputSchema },
   output: { schema: DashboardAssistantOutputSchema },
+  model: 'googleai/gemini-1.5-flash',
   prompt: `
 You are **Cat-Bot**, an AI assistant for the 'Quantum Observer' dashboard.
 
@@ -94,11 +95,10 @@ const dashboardAssistantFlow = ai.defineFlow(
 /* ---------- Public API ---------- */
 
 export async function askDashboardAssistant(
-  query: string,
-  history: { user: string; assistant: string }[] = []
+  input: z.infer<typeof DashboardAssistantInputSchema>
 ): Promise<z.infer<typeof DashboardAssistantOutputSchema>> {
   try {
-    return await dashboardAssistantFlow({ query, history });
+    return await dashboardAssistantFlow(input);
   } catch (err) {
     console.error('Cat-Bot error:', err);
     return {
