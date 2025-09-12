@@ -17,7 +17,7 @@ export interface Job {
 
 export interface Backend {
   name: string;
-  status: "active" | "inactive" | "maintenance";
+  status: "active" | "inactive";
   qubit_count: number;
   queue_depth: number;
   error_rate: number;

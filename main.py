@@ -212,5 +212,3 @@ def list_backends():
 @app.get("/")
 def read_root():
     return {"status": "Quantum Tracker API is running"}
-
-    

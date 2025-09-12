@@ -17,11 +17,6 @@ const statusConfig: Record<string, { icon: React.ElementType, color: string, lab
     color: "bg-green-500",
     label: "Active",
   },
-  maintenance: {
-    icon: Clock,
-    color: "bg-yellow-500",
-    label: "Maintenance",
-  },
   inactive: {
     icon: MinusCircle,
     color: "bg-red-500",
