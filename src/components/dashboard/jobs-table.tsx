@@ -59,10 +59,6 @@ export function JobsTable({
           <CardDescription>A list of recent and ongoing quantum jobs.</CardDescription>
         </div>
          <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={onViewRunningJobs}>
-            <Filter />
-            <span className="sr-only">Show Running Jobs</span>
-          </Button>
           <Link href="/dashboard/jobs" passHref>
             <Button variant="ghost" size="icon" asChild>
                 <span>
