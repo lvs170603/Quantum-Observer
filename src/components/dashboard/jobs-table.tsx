@@ -91,7 +91,7 @@ export function JobsTable({
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex-1">
                 <CardTitle>Live Jobs</CardTitle>
-                <CardDescription>Recent and ongoing quantum jobs.</CardDescription>
+                <CardDescription>Recent and ongoing jobs.</CardDescription>
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
                 <div className="relative w-full md:w-auto">
@@ -147,51 +147,36 @@ export function JobsTable({
                 <TableHead className="hidden md:table-cell">Backend</TableHead>
                 <TableHead className="hidden sm:table-cell">Submitted</TableHead>
                 <TableHead>User</TableHead>
-                <TableHead><span className="sr-only">Actions</span></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isFetching && jobs.length === 0 ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell colSpan={6} className="h-12 text-center">
+                    <TableCell colSpan={5} className="h-12 text-center">
                       <span className="animate-pulse">Loading...</span>
                     </TableCell>
                   </TableRow>
                 ))
               ) : jobs.length > 0 ? (
                   jobs.map((job) => (
-                    <TableRow key={job.id}>
-                      <TableCell onClick={() => onJobSelect(job)} className="font-mono text-xs truncate max-w-[100px] sm:max-w-xs cursor-pointer">{job.id}</TableCell>
-                      <TableCell onClick={() => onJobSelect(job)} className="cursor-pointer">
+                    <TableRow key={job.id} onClick={() => onJobSelect(job)} className="cursor-pointer">
+                      <TableCell className="font-mono text-xs truncate max-w-[100px] sm:max-w-xs">{job.id}</TableCell>
+                      <TableCell>
                         <Badge variant="outline" className={statusStyles[job.status]}>
                           {job.status}
                         </Badge>
                       </TableCell>
-                      <TableCell onClick={() => onJobSelect(job)} className="hidden md:table-cell cursor-pointer">{job.backend}</TableCell>
-                      <TableCell onClick={() => onJobSelect(job)} className="hidden sm:table-cell cursor-pointer">
+                      <TableCell className="hidden md:table-cell">{job.backend}</TableCell>
+                      <TableCell className="hidden sm:table-cell">
                         {formatDistanceToNow(new Date(job.submitted), { addSuffix: true })}
                       </TableCell>
-                      <TableCell onClick={() => onJobSelect(job)} className="cursor-pointer">{job.user}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                    <span className="sr-only">Open menu</span>
-                                    <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => onJobSelect(job)}>View Details</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleCopy(job.id)}>Copy ID</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+                      <TableCell>{job.user}</TableCell>
                     </TableRow>
                   ))
               ) : (
                  <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={5} className="h-24 text-center">
                       No results found for your filters.
                     </TableCell>
                   </TableRow>
