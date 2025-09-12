@@ -34,6 +34,7 @@ export default function AllJobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [jobsToExport, setJobsToExport] = useState<Job[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -95,6 +96,11 @@ export default function AllJobsPage() {
   const handleJobSelect = (job: Job) => {
     setSelectedJob(job);
     setIsDrawerOpen(true);
+  };
+
+  const handleExportClick = (jobs: Job[]) => {
+    setJobsToExport(jobs);
+    setIsExportDialogOpen(true);
   };
   
   const handleCopy = (id: string) => {
@@ -164,7 +170,7 @@ export default function AllJobsPage() {
                         <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
                          <span className="sr-only">Refresh</span>
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => setIsExportDialogOpen(true)}>
+                    <Button variant="outline" size="sm" onClick={() => handleExportClick(filteredJobs)}>
                         <Download className="mr-2 h-4 w-4" />
                         Export
                     </Button>
@@ -221,6 +227,9 @@ export default function AllJobsPage() {
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleCopy(job.id)}>
                               Copy ID
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleExportClick([job])}>
+                              Download
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -281,7 +290,7 @@ export default function AllJobsPage() {
         onOpenChange={setIsDrawerOpen}
       />
       <ExportDialog
-        jobs={filteredJobs}
+        jobs={jobsToExport}
         isOpen={isExportDialogOpen}
         onOpenChange={setIsExportDialogOpen}
       />
