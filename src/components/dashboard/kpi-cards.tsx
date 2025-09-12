@@ -21,6 +21,7 @@ const kpiConfig = [
     description: "Total jobs processed in the period",
     format: (value: number) => value.toString(),
     clickable: false,
+    hoverable: true,
   },
   {
     title: "Live Jobs",
@@ -95,7 +96,7 @@ export function KpiCards({ onCardClick, activeView, ...metrics }: KpiCardsProps)
             key={kpi.title} 
             className={cn(
               "transition-colors", 
-              kpi.clickable && "hover:bg-muted",
+              (kpi.clickable || kpi.hoverable) && "hover:bg-muted",
               isActive && "bg-primary/10 border-primary"
             )}
           >
