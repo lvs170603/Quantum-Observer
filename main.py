@@ -22,7 +22,7 @@ logger = logging.getLogger("quantum-tracker")
 # IBM Quantum Credentials (⚠️ demo)
 # -------------------------
 TOKEN = os.getenv("IBM_QUANTUM_TOKEN")
-INSTANCE = "crn:v1:bluemix:public:quantum-computing:us-east:a/f337e67a23db46a7b912221b7e84e282:6bac78c7-3180-4d7f-9e06-1cc288de4f52::"
+INSTANCE = os.getenv("IBM_QUANTUM_INSTANCE")
 CHANNEL = "ibm_cloud"
 
 service = None
