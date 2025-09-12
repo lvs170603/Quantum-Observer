@@ -11,7 +11,7 @@ interface DailySummaryChartProps {
   data: DailyJobSummary;
 }
 
-export function DailySummaryChart({ data }: DailyJobSummaryChartProps) {
+export function DailySummaryChart({ data }: DailySummaryChartProps) {
   const chartData = data.completedByBackend;
   const chartConfig = Object.fromEntries(
     chartData.map(item => [item.name, { label: item.name, color: item.fill }])
@@ -31,20 +31,27 @@ export function DailySummaryChart({ data }: DailyJobSummaryChartProps) {
           className="h-[250px] w-full"
         >
           <ResponsiveContainer>
-            <BarChart data={chartData} layout="vertical" margin={{left: 10, right: 20}}>
-              <XAxis type="number" hide />
-              <YAxis 
+            <BarChart data={chartData} margin={{left: -20, right: 20, bottom: 20}}>
+              <XAxis 
                 dataKey="name" 
                 type="category" 
                 tickLine={false} 
                 axisLine={false}
                 tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                interval={0}
+                angle={-45}
+                textAnchor="end"
                 />
+              <YAxis 
+                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                tickLine={false}
+                axisLine={false}
+              />
               <Tooltip
                 cursor={false}
                 content={<ChartTooltipContent hideLabel nameKey="name" />}
               />
-              <Bar dataKey="value" layout="vertical" radius={5}>
+              <Bar dataKey="value" radius={5}>
                 {chartData.map((entry) => (
                   <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                 ))}
